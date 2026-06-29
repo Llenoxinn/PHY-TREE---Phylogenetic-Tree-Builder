@@ -1,13 +1,17 @@
 import { useAlignmentStore } from '../../store/alignment-store'
 import { SCORING_MATRICES } from '../../lib/algorithms/scoring-matrices'
 import type { ScoringMatrixType } from '../../types'
+import { InfoIcon } from '../ui/Tooltip'
 
 export function ScoringSelector() {
   const { matrixType, gapPenalty, setMatrixType, setGapPenalty } = useAlignmentStore()
 
   return (
-    <div className="space-y-1.5">
-      <label className="text-[10px] font-semibold text-text-muted uppercase tracking-widest">Scoring</label>
+    <div className="space-y-2">
+      <div className="flex items-center gap-1.5">
+        <label className="text-[10px] font-semibold text-text-muted uppercase tracking-widest">Scoring</label>
+        <InfoIcon tip="Scoring matrix defines match/mismatch values for nucleotide or amino acid alignment" />
+      </div>
       <select
         value={matrixType}
         onChange={(e) => setMatrixType(e.target.value as ScoringMatrixType)}
@@ -18,7 +22,10 @@ export function ScoringSelector() {
         ))}
       </select>
       <div className="flex items-center gap-2">
-        <span className="text-[10px] text-text-muted">Gap</span>
+        <div className="flex items-center gap-1">
+          <span className="text-[10px] text-text-muted">Gap</span>
+          <InfoIcon tip="Penalty subtracted for each gap introduced in the alignment. More negative = harder to insert gaps" />
+        </div>
         <input
           type="range"
           min="-20"

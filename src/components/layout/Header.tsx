@@ -12,7 +12,11 @@ export function Header() {
   const { exportSVG, exportPNG } = useExport()
   const { fullTree } = useTreeStore()
   const { distanceMatrix } = useAlignmentStore()
-  const { sequences } = useSequenceStore()
+  const { sequences, setRawInput } = useSequenceStore()
+
+  const handleNew = () => {
+    setRawInput('')
+  }
 
   const handleSVG = () => {
     const svg = document.querySelector('#tree-svg-container svg') as SVGSVGElement | null
@@ -43,6 +47,15 @@ export function Header() {
         <PhyTreeLogo size={22} />
         <span className="text-sm font-semibold text-text-primary tracking-tight">PhyTree</span>
       </div>
+
+      <div className="h-4 w-px bg-border" />
+
+      <button
+        onClick={handleNew}
+        className="px-1.5 py-0.5 text-[11px] text-text-secondary hover:text-text-primary hover:bg-surface-hover transition-colors"
+      >
+        New
+      </button>
 
       <div className="h-4 w-px bg-border" />
 

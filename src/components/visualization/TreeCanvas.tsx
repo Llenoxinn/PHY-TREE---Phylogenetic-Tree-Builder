@@ -3,7 +3,7 @@ import * as d3 from 'd3'
 import { useTreeStore } from '../../store/tree-store'
 import { useSequenceStore } from '../../store/sequence-store'
 import { useUIStore } from '../../store/ui-store'
-import { getLeafColor } from '../../lib/utils/colors'
+import { getLeafColor, type PaletteName } from '../../lib/utils/colors'
 import type { TreeNode } from '../../types'
 
 export function TreeCanvas() {
@@ -30,7 +30,6 @@ export function TreeCanvas() {
     const linkColor = isDark ? '#3b3f5c' : '#c5c9d6'
     const linkColorHover = isDark ? '#f43f5e' : '#e11d48'
     const nodeStroke = isDark ? '#1a1b26' : '#ffffff'
-    const leafDotStroke = isDark ? '#2e3047' : '#f0f0f0'
 
     const svg = d3.select(svgEl)
     svg.selectAll('*').remove()
@@ -48,16 +47,17 @@ export function TreeCanvas() {
     feMerge.append('feMergeNode').attr('in', 'SourceGraphic')
 
     const root = d3.hierarchy(treeData)
+    const paletteName = palette as PaletteName
 
     if (isCircular) {
       drawCircular(svg, root, width, height, {
-        textColor, textColorMuted, linkColor, linkColorHover, nodeStroke, palette,
-        selectNode, setHovered, hoveredIndex, defs,
+        textColor, textColorMuted, linkColor, linkColorHover, nodeStroke, paletteName,
+        selectNode, setHovered, hoveredIndex,
       })
     } else {
       drawRectangular(svg, root, width, height, {
-        textColor, textColorMuted, linkColor, linkColorHover, nodeStroke, leafDotStroke, palette,
-        selectNode, setHovered, hoveredIndex, defs,
+        textColor, textColorMuted, linkColor, linkColorHover, nodeStroke, paletteName,
+        selectNode, setHovered, hoveredIndex,
       })
     }
 
@@ -84,12 +84,10 @@ interface DrawOpts {
   linkColor: string
   linkColorHover: string
   nodeStroke: string
-  leafDotStroke?: string
-  palette: string
+  paletteName: PaletteName
   selectNode: (node: any) => void
   setHovered: (idx: number | null) => void
   hoveredIndex: number | null
-  defs: d3.Selection<SVGDefsElement, unknown, null, undefined>
 }
 
 function drawRectangular(
@@ -99,7 +97,7 @@ function drawRectangular(
   height: number,
   opts: DrawOpts,
 ) {
-  const { textColor, textColorMuted, linkColor, linkColorHover, nodeStroke, leafDotStroke, palette, selectNode, setHovered, hoveredIndex } = opts
+  const { textColor, textColorMuted, linkColor, linkColorHover, nodeStroke, paletteName, selectNode, setHovered, hoveredIndex } = opts
 
   const pad = { top: 24, right: 120, bottom: 24, left: 40 }
   const w = width - pad.left - pad.right
@@ -110,7 +108,6 @@ function drawRectangular(
 
   const g = svg.append('g').attr('transform', `translate(${pad.left},${pad.top})`)
 
-  // Zoom
   const zoom = d3.zoom<SVGSVGElement, unknown>()
     .scaleExtent([0.2, 8])
     .on('zoom', (event) => {
@@ -122,7 +119,7 @@ function drawRectangular(
   const leafIndexMap = new Map<string, number>()
   allLeaves.forEach((leaf, i) => leafIndexMap.set(leaf.data.id, i))
 
-  // Draw links with smooth step curves
+  // Links with smooth curves
   g.selectAll('.link')
     .data(root.links())
     .join('path')
@@ -132,7 +129,6 @@ function drawRectangular(
       const sy = d.source.x as number
       const tx = d.target.y as number
       const ty = d.target.x as number
-      // Smooth L-shaped curve
       const mx = (sx + tx) / 2
       return `M${sx},${sy}C${mx},${sy} ${mx},${ty} ${tx},${ty}`
     })
@@ -140,9 +136,8 @@ function drawRectangular(
     .attr('stroke', linkColor)
     .attr('stroke-width', 1.2)
     .attr('stroke-linecap', 'round')
-    .style('transition', 'stroke 0.15s')
 
-  // Draw nodes
+  // Nodes
   const node = g.selectAll('.node')
     .data(root.descendants())
     .join('g')
@@ -158,9 +153,9 @@ function drawRectangular(
     })
     .attr('fill', (d: any) => {
       const idx = leafIndexMap.get(d.data.id)
-      return idx !== undefined ? getLeafColor(idx, palette) : '#fda4af'
+      return idx !== undefined ? getLeafColor(idx, paletteName) : '#fda4af'
     })
-    .attr('stroke', leafDotStroke || nodeStroke)
+    .attr('stroke', nodeStroke)
     .attr('stroke-width', 2)
     .style('cursor', 'pointer')
     .style('filter', (d: any) => {
@@ -185,15 +180,13 @@ function drawRectangular(
       const idx = leafIndexMap.get(d.data.id)
       return idx !== undefined && idx === hoveredIndex ? linkColorHover : textColor
     })
-    .style('transition', 'fill 0.15s')
     .text((d: any) => {
       const name = d.data.name.replace(/[()]/g, '')
       return name.length > 20 ? name.slice(0, 18) + '\u2026' : name
     })
 
   // Internal nodes
-  const internalNodes = node.filter((d: any) => !!d.children)
-  internalNodes.append('circle')
+  node.filter((d: any) => !!d.children).append('circle')
     .attr('r', 2.5)
     .attr('fill', linkColorHover)
     .attr('stroke', nodeStroke)
@@ -201,8 +194,8 @@ function drawRectangular(
     .style('cursor', 'pointer')
     .on('click', (_event: any, d: any) => selectNode(d.data))
 
-  // Merge distance labels on internal nodes
-  internalNodes.filter((d: any) => (d.data as any).mergeDistance !== undefined)
+  // Merge distance labels
+  node.filter((d: any) => d.children && (d.data as any).mergeDistance !== undefined)
     .append('text')
     .attr('dx', 0)
     .attr('dy', -7)
@@ -226,8 +219,7 @@ function drawRectangular(
     scaleG.append('line')
       .attr('x1', 0).attr('y1', 0)
       .attr('x2', scaleWidth).attr('y2', 0)
-      .attr('stroke', textColorMuted)
-      .attr('stroke-width', 1)
+      .attr('stroke', textColorMuted).attr('stroke-width', 1)
 
     scaleG.append('line')
       .attr('x1', 0).attr('y1', -3).attr('x2', 0).attr('y2', 3)
@@ -253,7 +245,7 @@ function drawCircular(
   height: number,
   opts: DrawOpts,
 ) {
-  const { textColor, textColorMuted, linkColor, linkColorHover, nodeStroke, palette, selectNode, defs } = opts
+  const { textColor, linkColor, linkColorHover, nodeStroke, paletteName, selectNode } = opts
 
   const radius = Math.min(width, height) * 0.36
   const cluster = d3.cluster<TreeNode>().size([2 * Math.PI, radius])
@@ -278,7 +270,7 @@ function drawCircular(
     r * Math.sin(angle - Math.PI / 2),
   ]
 
-  // Draw links with smooth arcs
+  // Links
   g.selectAll('.link')
     .data(root.links())
     .join('path')
@@ -334,14 +326,14 @@ function drawCircular(
     .attr('cy', (d: any) => (d.y as number) * Math.sin((d.x as number) - Math.PI / 2))
     .attr('fill', (d: any) => {
       const idx = leafIndexMap.get(d.data.id)
-      return idx !== undefined ? getLeafColor(idx, palette) : '#fda4af'
+      return idx !== undefined ? getLeafColor(idx, paletteName) : '#fda4af'
     })
     .attr('stroke', nodeStroke)
     .attr('stroke-width', 2)
     .style('cursor', 'pointer')
     .on('click', (_event: any, d: any) => selectNode(d.data))
 
-  // Internal node dots
+  // Internal nodes
   g.selectAll('.internal-dot')
     .data(root.descendants().filter(d => !!d.children))
     .join('circle')
@@ -354,7 +346,7 @@ function drawCircular(
     .style('cursor', 'pointer')
     .on('click', (_event: any, d: any) => selectNode(d.data))
 
-  // Inner guide circle at 1/3 radius
+  // Guide circle
   g.append('circle')
     .attr('r', radius * 0.33)
     .attr('fill', 'none')

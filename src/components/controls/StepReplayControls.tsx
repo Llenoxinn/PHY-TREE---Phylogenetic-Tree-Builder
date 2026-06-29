@@ -46,10 +46,10 @@ export function StepReplayControls() {
   return (
     <div className="space-y-1.5">
       <div className="flex items-center justify-between">
-        <span className="text-[10px] font-mono text-text-muted">
+        <span className="text-[10px] text-text-muted" style={{ fontFamily: 'var(--font-sans)' }}>
           Step {currentStep}/{steps.length - 1}
         </span>
-        <span className="text-[10px] text-text-muted max-w-xs truncate">
+        <span className="text-[10px] text-text-muted max-w-xs truncate" style={{ fontFamily: 'var(--font-sans)' }}>
           {steps[currentStep]?.description}
         </span>
       </div>
@@ -71,6 +71,7 @@ export function StepReplayControls() {
         <button
           onClick={() => isPlaying ? pause() : play()}
           className="px-3 py-1 bg-blush-500 text-white text-[10px] font-medium hover:bg-blush-600 transition-colors"
+          style={{ fontFamily: 'var(--font-sans)' }}
         >
           {isPlaying ? 'Pause' : 'Play'}
         </button>
@@ -80,16 +81,24 @@ export function StepReplayControls() {
         <button onClick={() => goToStep(steps.length - 1)} className="p-1 text-text-muted hover:text-text-primary transition-colors text-xs" title="Last step">
           &gt;|
         </button>
-        <select
-          value={playSpeed}
-          onChange={(e) => setPlaySpeed(Number(e.target.value))}
-          className="ml-1 text-[10px] border border-border px-1.5 py-0.5 bg-surface text-text-primary focus:outline-none font-mono"
-        >
-          <option value={2000}>0.5x</option>
-          <option value={1000}>1x</option>
-          <option value={500}>2x</option>
-          <option value={200}>5x</option>
-        </select>
+        <div className="relative ml-1">
+          <select
+            value={playSpeed}
+            onChange={(e) => setPlaySpeed(Number(e.target.value))}
+            className="text-[10px] border border-border px-2 py-1 bg-surface text-text-primary focus:outline-none appearance-none cursor-pointer pr-5"
+            style={{ fontFamily: 'var(--font-sans)' }}
+          >
+            <option value={2000}>0.5x</option>
+            <option value={1000}>1x</option>
+            <option value={500}>2x</option>
+            <option value={200}>5x</option>
+          </select>
+          <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-1">
+            <svg className="w-3 h-3 text-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </div>
+        </div>
       </div>
     </div>
   )
