@@ -15,8 +15,8 @@ function computeLayout(
   const root = d3.hierarchy(treeData)
   const tree = d3.cluster<TreeNode>()
     .size(layoutType === 'circular'
-      ? [2 * Math.PI, Math.min(width, height) * 0.35]
-      : [width - 100, height - 80])
+      ? [2 * Math.PI, Math.min(width, height) * 0.38]
+      : [width - 120, height - 80])
   tree(root)
   return root
 }
@@ -59,6 +59,15 @@ export function TreeCanvas() {
       leafIndexMap.set(leaf.data.id, i)
     })
 
+    // Draw links with gradient
+    const defs = svg.append('defs')
+    const gradient = defs.append('linearGradient')
+      .attr('id', 'branch-gradient')
+      .attr('x1', '0%').attr('y1', '0%')
+      .attr('x2', '100%').attr('y2', '0%')
+    gradient.append('stop').attr('offset', '0%').attr('stop-color', '#fda4af')
+    gradient.append('stop').attr('offset', '100%').attr('stop-color', '#f43f5e')
+
     g.selectAll('.link')
       .data(root.links())
       .join('path')
@@ -80,9 +89,10 @@ export function TreeCanvas() {
         return `M${sx},${sy}C${(sx + tx) / 2},${sy} ${(sx + tx) / 2},${ty} ${tx},${ty}`
       })
       .attr('fill', 'none')
-      .attr('stroke', '#bbb')
-      .attr('stroke-width', 1.5)
+      .attr('stroke', 'url(#branch-gradient)')
+      .attr('stroke-width', 2)
 
+    // Draw nodes
     const node = g.selectAll('.node')
       .data(root.descendants())
       .join('g')
@@ -98,35 +108,34 @@ export function TreeCanvas() {
       .style('cursor', 'pointer')
 
     node.append('circle')
-      .attr('r', (d: any) => d.children ? 4 : 3)
+      .attr('r', (d: any) => d.children ? 4 : 5)
       .attr('fill', (d: any) => {
         if (!d.children) {
           const idx = leafIndexMap.get(d.data.id)
-          return idx !== undefined ? getLeafColor(idx, palette) : '#666'
+          return idx !== undefined ? getLeafColor(idx, palette) : '#fda4af'
         }
-        return '#666'
+        return '#f43f5e'
       })
       .attr('stroke', '#fff')
-      .attr('stroke-width', 1.5)
+      .attr('stroke-width', 2)
 
     node.append('text')
-      .attr('dx', (d: any) => isCircular ? 0 : (d.children ? -8 : 8))
-      .attr('dy', (d: any) => isCircular ? (d.children ? -8 : 8) : 4)
+      .attr('dx', (d: any) => isCircular ? 0 : (d.children ? -10 : 10))
+      .attr('dy', (d: any) => isCircular ? (d.children ? -10 : 10) : 4)
       .attr('text-anchor', (d: any) => {
         if (isCircular) return d.children ? 'middle' : 'start'
         return d.children ? 'end' : 'start'
       })
       .style('font-size', '10px')
       .style('font-family', 'monospace')
+      .style('fill', '#374151')
+      .style('font-weight', (d: any) => d.children ? '600' : '400')
       .text((d: any) => {
         const name = d.data.name.replace(/[()]/g, '')
         return name.length > 20 ? name.slice(0, 18) + '\u2026' : name
       })
 
-    node.on('click', (_event: any, d: any) => {
-      selectNode(d.data)
-    })
-
+    node.on('click', (_event: any, d: any) => selectNode(d.data))
     node.on('mouseenter', (_event: any, d: any) => {
       if (!d.children) {
         const idx = leafIndexMap.get(d.data.id)
@@ -146,7 +155,7 @@ export function TreeCanvas() {
   }, [draw])
 
   return (
-    <div ref={containerRef} className="w-full h-full min-h-[400px]">
+    <div ref={containerRef} className="w-full h-full min-h-[300px]">
       <svg ref={svgRef} className="w-full h-full" />
     </div>
   )

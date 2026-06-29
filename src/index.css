@@ -1,10 +1,42 @@
 @import "tailwindcss";
 
+@theme {
+  --color-blush-50: #fff1f2;
+  --color-blush-100: #ffe4e6;
+  --color-blush-200: #fecdd3;
+  --color-blush-300: #fda4af;
+  --color-blush-400: #fb7185;
+  --color-blush-500: #f43f5e;
+  --color-blush-600: #e11d48;
+  --color-blush-700: #be123c;
+  --color-blush-800: #9f1239;
+  --color-blush-900: #881337;
+}
+
 html, body, #root {
   height: 100%;
   margin: 0;
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: #fafafa;
 }
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fadeIn { animation: fadeIn 0.4s ease-out; }
+.animate-slideUp { animation: slideUp 0.5s ease-out; }
+
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #fecdd3; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #fda4af; }

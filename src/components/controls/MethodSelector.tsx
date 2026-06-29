@@ -2,34 +2,25 @@ import { useTreeStore } from '../../store/tree-store'
 import type { TreeMethod } from '../../types'
 
 export function MethodSelector() {
-  const { method, setMethod, buildTree } = useTreeStore()
-
-  const handleChange = (m: TreeMethod) => {
-    setMethod(m)
-    const state = useTreeStore.getState()
-    if (state.steps.length > 0) {
-      const { labels, distanceMatrix } = (window as any).__lastBuildParams || {}
-      if (labels && distanceMatrix) buildTree(labels, distanceMatrix)
-    }
-  }
+  const { method, setMethod } = useTreeStore()
 
   return (
-    <div className="space-y-1.5">
-      <label className="text-sm font-medium">Tree Method</label>
-      <div className="flex gap-1 p-0.5 bg-gray-100 rounded-lg">
+    <div className="space-y-2">
+      <label className="text-xs font-semibold text-blush-600">Tree Method</label>
+      <div className="flex gap-1 p-1 bg-blush-50 rounded-xl">
         {(['upgma', 'neighbor-joining'] as TreeMethod[]).map((m) => (
           <button
             key={m}
-            onClick={() => handleChange(m)}
-            className={`flex-1 px-3 py-1.5 text-xs font-medium rounded-md transition-all ${
-              method === m ? 'bg-white shadow-sm text-blue-700' : 'text-gray-500 hover:text-gray-700'
+            onClick={() => setMethod(m)}
+            className={`flex-1 px-3 py-2 text-xs font-medium rounded-lg transition-all ${
+              method === m ? 'bg-white shadow-sm text-blush-600 shadow-blush-100' : 'text-gray-500 hover:text-gray-700'
             }`}
           >
             {m === 'upgma' ? 'UPGMA' : 'Neighbor-Joining'}
           </button>
         ))}
       </div>
-      <p className="text-[10px] text-gray-400">
+      <p className="text-[10px] text-gray-400 leading-relaxed">
         {method === 'upgma' ? 'Ultrametric — assumes clock-like evolution' : 'Additive — more biologically accurate'}
       </p>
     </div>

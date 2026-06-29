@@ -1,6 +1,5 @@
-import { useEffect, useCallback } from 'react'
+import { useEffect, useState } from 'react'
 import { Header } from './components/layout/Header'
-import { Panel } from './components/layout/Panel'
 import { SequenceInput } from './components/input/SequenceInput'
 import { SequenceLabels } from './components/input/SequenceLabels'
 import { SequenceValidator } from './components/input/SequenceValidator'
@@ -13,7 +12,7 @@ import { DistanceMatrixHeatmap } from './components/visualization/DistanceMatrix
 import { NodeInspectionPanel } from './components/visualization/NodeInspectionPanel'
 import { AlgorithmExplainer } from './components/info/AlgorithmExplainer'
 import { ExamplePresets } from './components/info/ExamplePresets'
-import { ExportMenu } from './components/export/ExportMenu'
+import { WelcomeHero } from './components/info/WelcomeHero'
 import { useSequenceStore } from './store/sequence-store'
 import { useAlignmentStore } from './store/alignment-store'
 import { useTreeStore } from './store/tree-store'
@@ -27,17 +26,8 @@ export default function App() {
   const compute = useAlignmentStore(s => s.compute)
   const buildTree = useTreeStore(s => s.buildTree)
   const theme = useUIStore(s => s.theme)
-
-  const handleBuild = useCallback(() => {
-    if (sequences.length < 2) return
-    if (!distanceMatrix.length) {
-      compute(sequences.map(s => s.raw))
-    }
-    const dm = useAlignmentStore.getState().distanceMatrix
-    if (dm.length > 0) {
-      buildTree(sequences.map(s => s.label), dm)
-    }
-  }, [sequences, distanceMatrix.length, compute, buildTree])
+  const { showHeatmap, showExplainer, showNodePanel } = useUIStore()
+  const [activeTab, setActiveTab] = useState<'input' | 'howto'>('input')
 
   useEffect(() => {
     if (sequences.length >= 2) {
@@ -52,80 +42,173 @@ export default function App() {
   }, [distanceMatrix])
 
   useEffect(() => {
-    if (theme === 'dark') {
-      document.documentElement.classList.add('dark')
-    } else {
-      document.documentElement.classList.remove('dark')
-    }
+    if (theme === 'dark') document.documentElement.classList.add('dark')
+    else document.documentElement.classList.remove('dark')
   }, [theme])
 
+  const hasData = sequences.length > 0
+  const hasTree = distanceMatrix.length > 0
+
   return (
-    <div className={`h-screen flex flex-col ${theme === 'dark' ? 'bg-gray-900 text-white' : 'bg-gray-50 text-gray-900'}`}>
+    <div className={`h-screen flex flex-col ${theme === 'dark' ? 'bg-gray-950 text-white' : 'bg-blush-50/30 text-gray-900'}`}>
       <Header />
 
       <div className="flex-1 flex overflow-hidden">
-        <div className={`w-72 flex-shrink-0 border-r overflow-y-auto ${theme === 'dark' ? 'border-gray-700' : 'border-gray-200'}`}>
-          <Panel>
-            <SequenceInput />
-            <SequenceLabels />
-            <SequenceValidator />
-            <hr />
-            <ScoringSelector />
-            <MethodSelector />
-            <LayoutToggle />
-            <hr />
-            <div className="md:hidden">
-              <ExamplePresets />
-              <div className="mt-2"><ExportMenu /></div>
-            </div>
-          </Panel>
-        </div>
+        {/* Left Sidebar */}
+        <aside className={`w-80 flex-shrink-0 border-r flex flex-col ${theme === 'dark' ? 'border-gray-800 bg-gray-900' : 'border-blush-100 bg-white'}`}>
+          <div className="flex border-b border-blush-100">
+            <button
+              onClick={() => setActiveTab('input')}
+              className={`flex-1 px-4 py-2.5 text-xs font-semibold transition-colors ${activeTab === 'input' ? 'text-blush-600 border-b-2 border-blush-500 bg-blush-50/50' : 'text-gray-400 hover:text-gray-600'}`}
+            >
+              Sequences
+            </button>
+            <button
+              onClick={() => setActiveTab('howto')}
+              className={`flex-1 px-4 py-2.5 text-xs font-semibold transition-colors ${activeTab === 'howto' ? 'text-blush-600 border-b-2 border-blush-500 bg-blush-50/50' : 'text-gray-400 hover:text-gray-600'}`}
+            >
+              How It Works
+            </button>
+          </div>
 
-        <div className="flex-1 flex flex-col overflow-hidden">
-          <div className="flex-1 relative" id="tree-svg-container">
-            {sequences.length === 0 && (
-              <div className="absolute inset-0 flex items-center justify-center text-gray-400">
-                <div className="text-center space-y-2">
-                  <p className="text-lg">Paste DNA sequences to begin</p>
-                  <p className="text-sm">Use FASTA format or one sequence per line</p>
-                  <p className="text-xs">Try an example preset from the sidebar</p>
+          <div className="flex-1 overflow-y-auto p-4 space-y-4">
+            {activeTab === 'input' ? (
+              <>
+                <SequenceInput />
+                {hasData && <SequenceLabels />}
+                {hasData && <SequenceValidator />}
+                <div className="h-px bg-blush-100" />
+                <ScoringSelector />
+                <MethodSelector />
+                <LayoutToggle />
+                <div className="h-px bg-blush-100" />
+                <ExamplePresets />
+              </>
+            ) : (
+              <HowItWorksPanel />
+            )}
+          </div>
+        </aside>
+
+        {/* Center - Tree Visualization */}
+        <main className="flex-1 flex flex-col overflow-hidden relative bg-white">
+          <WelcomeHero />
+
+          {hasData && (
+            <div className="flex-1 relative" id="tree-svg-container">
+              {isComputing && (
+                <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/80">
+                  <div className="flex items-center gap-3 bg-blush-50 px-5 py-3 rounded-xl border border-blush-200 shadow-sm">
+                    <div className="w-4 h-4 border-2 border-blush-300 border-t-blush-600 rounded-full animate-spin" />
+                    <span className="text-sm text-blush-600 font-medium">Computing alignments...</span>
+                  </div>
                 </div>
-              </div>
-            )}
-            {isComputing && (
-              <div className="absolute inset-0 flex items-center justify-center bg-white/50">
-                <div className="text-sm text-gray-500">Computing alignments...</div>
-              </div>
-            )}
-            <TreeCanvas />
-          </div>
-          <div className={`border-t p-3 ${theme === 'dark' ? 'border-gray-700' : 'border-gray-200'}`}>
-            <StepReplayControls />
-            <div className="flex gap-2 mt-2">
-              <button
-                onClick={handleBuild}
-                disabled={sequences.length < 2}
-                className={`px-4 py-1.5 text-xs font-medium rounded-lg transition-colors ${
-                  sequences.length < 2
-                    ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                    : 'bg-blue-500 text-white hover:bg-blue-600'
-                }`}
-              >
-                {sequences.length < 2 ? 'Need 2+ sequences' : 'Build & Re-Run'}
-              </button>
-              <span className="text-[10px] text-gray-400 self-center">
-                {distanceMatrix.length > 0 && `${sequences.length} taxa · matrix built`}
-              </span>
+              )}
+              <TreeCanvas />
             </div>
+          )}
+
+          {hasData && (
+            <div className="border-t border-blush-100 p-3 bg-white flex-shrink-0">
+              <StepReplayControls />
+              <div className="flex items-center gap-2 mt-2">
+                <button
+                  onClick={() => compute(sequences.map(s => s.raw))}
+                  disabled={sequences.length < 2}
+                  className={`px-4 py-2 text-xs font-semibold rounded-lg transition-all shadow-sm ${
+                    sequences.length < 2
+                      ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                      : 'bg-blush-500 text-white hover:bg-blush-600 hover:shadow-md active:scale-95'
+                  }`}
+                >
+                  {hasTree ? '↻ Re-Run Analysis' : '▶ Build Tree'}
+                </button>
+                {hasTree && (
+                  <span className="text-[11px] text-gray-400">
+                    {sequences.length} taxa · {distanceMatrix.length > 0 ? 'Tree built' : 'Matrix ready'}
+                  </span>
+                )}
+              </div>
+            </div>
+          )}
+        </main>
+
+        {/* Right Sidebar */}
+        {(showHeatmap || showExplainer || showNodePanel) && hasData && (
+          <aside className={`w-72 flex-shrink-0 border-l overflow-y-auto ${theme === 'dark' ? 'border-gray-800 bg-gray-900' : 'border-blush-100 bg-white'}`}>
+            <div className="p-3 space-y-4">
+              {showExplainer && <AlgorithmExplainer />}
+              {showHeatmap && <DistanceMatrixHeatmap />}
+              {showNodePanel && <NodeInspectionPanel />}
+            </div>
+          </aside>
+        )}
+      </div>
+    </div>
+  )
+}
+
+function HowItWorksPanel() {
+  return (
+    <div className="space-y-5 text-xs">
+      <div>
+        <h3 className="font-bold text-blush-600 text-sm mb-2">What is PhyTree?</h3>
+        <p className="text-gray-600 leading-relaxed">
+          PhyTree is an interactive phylogenetic tree builder. It takes DNA sequences,
+          computes pairwise genetic distances using alignment algorithms, and renders
+          an evolutionary tree that shows how species or genes are related.
+        </p>
+      </div>
+
+      <div>
+        <h3 className="font-bold text-blush-600 text-sm mb-2">Step-by-Step Guide</h3>
+        <ol className="space-y-2 text-gray-600">
+          <li className="flex gap-2">
+            <span className="w-5 h-5 bg-blush-100 text-blush-600 rounded-full flex items-center justify-center flex-shrink-0 text-[10px] font-bold">1</span>
+            <span><strong>Input sequences:</strong> Paste DNA sequences in FASTA format, or one per line. You can also upload a .fasta file.</span>
+          </li>
+          <li className="flex gap-2">
+            <span className="w-5 h-5 bg-blush-100 text-blush-600 rounded-full flex items-center justify-center flex-shrink-0 text-[10px] font-bold">2</span>
+            <span><strong>Choose scoring:</strong> Select a scoring matrix (Simple for DNA, BLOSUM62 for proteins) and gap penalty.</span>
+          </li>
+          <li className="flex gap-2">
+            <span className="w-5 h-5 bg-blush-100 text-blush-600 rounded-full flex items-center justify-center flex-shrink-0 text-[10px] font-bold">3</span>
+            <span><strong>Build the tree:</strong> Click "Build Tree" to compute pairwise alignments and render the evolutionary tree.</span>
+          </li>
+          <li className="flex gap-2">
+            <span className="w-5 h-5 bg-blush-100 text-blush-600 rounded-full flex items-center justify-center flex-shrink-0 text-[10px] font-bold">4</span>
+            <span><strong>Explore:</strong> Use the replay controls to step through the algorithm. Click nodes to inspect. Zoom and pan.</span>
+          </li>
+        </ol>
+      </div>
+
+      <div>
+        <h3 className="font-bold text-blush-600 text-sm mb-2">Tree Methods</h3>
+        <div className="space-y-2">
+          <div className="bg-blush-50 rounded-lg p-3">
+            <span className="font-semibold text-gray-800">UPGMA</span>
+            <p className="text-gray-500 mt-1">
+              Simple hierarchical clustering. Assumes all species evolve at the same rate
+              (molecular clock). Produces an ultrametric tree.
+            </p>
+          </div>
+          <div className="bg-blush-50 rounded-lg p-3">
+            <span className="font-semibold text-gray-800">Neighbor-Joining</span>
+            <p className="text-gray-500 mt-1">
+              More biologically accurate. Corrects for unequal evolutionary rates.
+              Produces an additive tree with variable branch lengths.
+            </p>
           </div>
         </div>
+      </div>
 
-        <div className={`w-72 flex-shrink-0 border-l overflow-y-auto ${theme === 'dark' ? 'border-gray-700' : 'border-gray-200'}`}>
-          <Panel>
-            <AlgorithmExplainer />
-            <DistanceMatrixHeatmap />
-            <NodeInspectionPanel />
-          </Panel>
+      <div>
+        <h3 className="font-bold text-blush-600 text-sm mb-2">Keyboard Shortcuts</h3>
+        <div className="grid grid-cols-2 gap-1 text-gray-500">
+          <span><kbd className="bg-gray-100 px-1.5 py-0.5 rounded text-[10px]">Space</kbd> Play/Pause</span>
+          <span><kbd className="bg-gray-100 px-1.5 py-0.5 rounded text-[10px]">→</kbd> Next step</span>
+          <span><kbd className="bg-gray-100 px-1.5 py-0.5 rounded text-[10px]">←</kbd> Previous step</span>
+          <span><kbd className="bg-gray-100 px-1.5 py-0.5 rounded text-[10px]">Home</kbd> First step</span>
         </div>
       </div>
     </div>

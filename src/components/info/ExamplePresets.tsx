@@ -15,28 +15,24 @@ export function ExamplePresets() {
   }
 
   return (
-    <div className="space-y-1.5">
-      <label className="text-xs font-medium">Example Presets</label>
-      <div className="grid grid-cols-2 gap-1">
+    <div className="space-y-2">
+      <label className="text-xs font-semibold text-blush-600">Quick Start</label>
+      <div className="space-y-1.5">
         {PRESETS.map((preset) => (
           <button
             key={preset.name}
             onClick={() => loadPreset(preset.fasta)}
-            className="text-[10px] px-2 py-1.5 rounded border text-left hover:bg-blue-50 hover:border-blue-300 transition-colors"
-            title={preset.description}
+            className="w-full text-left px-3 py-2 rounded-xl border border-blush-100 hover:border-blush-300 hover:bg-blush-50 transition-all group"
           >
-            <span className="font-medium">{preset.name}</span>
-            <br />
-            <span className="text-gray-400">{preset.description}</span>
+            <span className="text-xs font-semibold text-gray-700 group-hover:text-blush-600">{preset.name}</span>
+            <p className="text-[10px] text-gray-400">{preset.description}</p>
           </button>
         ))}
         <button
           onClick={handleRandom}
-          className="text-[10px] px-2 py-1.5 rounded border text-left hover:bg-amber-50 hover:border-amber-300 transition-colors"
+          className="w-full text-left px-3 py-2 rounded-xl border border-dashed border-blush-200 text-blush-500 hover:bg-blush-50 hover:border-blush-300 text-xs font-medium transition-all"
         >
-          <span className="font-medium">🎲 Random</span>
-          <br />
-          <span className="text-gray-400">Generate random sequences</span>
+          🎲 Generate Random
         </button>
       </div>
     </div>
