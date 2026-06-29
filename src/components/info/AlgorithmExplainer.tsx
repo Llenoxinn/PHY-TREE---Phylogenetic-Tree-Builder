@@ -1,15 +1,31 @@
 import { useTreeStore } from '../../store/tree-store'
 
-const EXPLANATIONS: Record<string, { title: string; desc: string; formula?: string }> = {
+const EXPLANATIONS: Record<string, { title: string; desc: string; formula: { parts: string[] } }> = {
   upgma: {
     title: 'UPGMA',
-    desc: 'Hierarchical clustering assuming constant molecular clock. Merges closest clusters, updating distances via weighted average.',
-    formula: 'd(ij,k) = (n_i * d_ik + n_j * d_jk) / (n_i + n_j)',
+    desc: 'Hierarchical clustering assuming a constant molecular clock. At each step, the two closest clusters are merged. Distances to the new cluster are computed as a weighted average.',
+    formula: {
+      parts: [
+        'd(ij, k)',
+        '=',
+        'n\u1d62 \u00b7 d(ik) + n\u2c6c \u00b7 d(jk)',
+        '\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500',
+        'n\u1d62 + n\u2c6c',
+      ],
+    },
   },
   'neighbor-joining': {
     title: 'Neighbor-Joining',
-    desc: 'Minimizes total branch length. Corrects for unequal rates by subtracting rate estimates from the distance matrix.',
-    formula: 'D(ij,k) = (D_ik + D_jk - D_ij) / 2',
+    desc: 'Finds the pair of neighbors that minimizes total branch length. Corrects for unequal evolutionary rates by subtracting rate estimates before selecting neighbors.',
+    formula: {
+      parts: [
+        'D(ij, k)',
+        '=',
+        'D(ik) + D(jk) \u2212 D(ij)',
+        '\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500',
+        '2',
+      ],
+    },
   },
 }
 
@@ -20,26 +36,27 @@ export function AlgorithmExplainer() {
   if (!info) return null
 
   return (
-    <div className="space-y-2 border border-border p-2">
+    <div className="border border-border p-3 space-y-3">
       <div>
-        <div className="flex items-center gap-2 mb-0.5">
-          <span className="text-[10px] font-semibold text-text-muted uppercase tracking-widest">{info.title}</span>
-        </div>
-        <p className="text-[10px] text-text-secondary leading-relaxed">{info.desc}</p>
-        {info.formula && (
-          <code className="block mt-1 text-[10px] font-mono text-blush-500 dark:text-blush-400 bg-blush-50/30 dark:bg-blush-900/10 px-1.5 py-0.5">
-            {info.formula}
-          </code>
-        )}
+        <span className="text-xs font-semibold text-text-primary">{info.title}</span>
+        <p className="text-xs text-text-secondary leading-relaxed mt-1">{info.desc}</p>
       </div>
+
+      <div className="bg-surface-hover border border-border p-3">
+        <span className="text-[10px] text-text-muted uppercase tracking-wider block mb-2">Formula</span>
+        <div className="flex flex-col items-center font-mono text-sm text-text-primary leading-tight">
+          <span>{info.formula.parts[0]} {info.formula.parts[1]} {info.formula.parts[2]}</span>
+          <span className="text-text-muted text-[11px] tracking-widest">{info.formula.parts[3]}</span>
+          <span>{info.formula.parts[4]}</span>
+        </div>
+      </div>
+
       {steps.length > 0 && (
         <div className="border-t border-border pt-2">
-          <div className="flex items-baseline gap-2 mb-0.5">
-            <span className="text-[10px] font-mono text-text-muted">
-              Step {currentStep}/{steps.length - 1}
-            </span>
-          </div>
-          <p className="text-[10px] text-text-secondary">
+          <span className="text-[10px] text-text-muted font-mono">
+            Step {currentStep} of {steps.length - 1}
+          </span>
+          <p className="text-xs text-text-secondary mt-1 leading-relaxed">
             {steps[currentStep]?.description}
           </p>
         </div>

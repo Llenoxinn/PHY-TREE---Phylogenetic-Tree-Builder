@@ -21,51 +21,64 @@ export function WelcomeHero() {
   if (sequences.length > 0) return null
 
   return (
-    <div className="absolute inset-0 flex items-center justify-center bg-surface-alt overflow-y-auto">
-      <div className="max-w-2xl w-full px-8 py-12">
-        <div className="text-center mb-8">
-          <div className="mb-3">
-            <PhyTreeLogo size={48} />
+    <div className="absolute inset-0 flex items-center justify-center bg-surface-alt overflow-y-auto p-6">
+      <div className="w-full max-w-xl">
+        {/* Header */}
+        <div className="text-center mb-6">
+          <div className="inline-flex mb-4">
+            <PhyTreeLogo size={56} />
           </div>
-          <h1 className="text-xl font-semibold text-text-primary mb-1 tracking-tight">
+          <h1 className="text-2xl font-semibold text-text-primary tracking-tight mb-2">
             Phylogenetic Tree Builder
           </h1>
-          <p className="text-text-secondary text-xs max-w-md mx-auto leading-relaxed">
-            Input DNA sequences, compute pairwise distances via Needleman-Wunsch alignment,
-            and render an interactive evolutionary tree. Step through the algorithm to see how it works.
+          <p className="text-sm text-text-secondary max-w-md mx-auto leading-relaxed">
+            Input DNA sequences, compute pairwise distances via Needleman-Wunsch
+            alignment, and render an interactive evolutionary tree.
           </p>
         </div>
 
+        {/* Steps */}
         <div className="border border-border bg-surface p-4 mb-4">
-          <h2 className="text-[10px] font-semibold text-text-muted uppercase tracking-widest mb-3">How it works</h2>
-          <div className="grid grid-cols-4 gap-3">
+          <h2 className="text-[10px] font-semibold text-text-muted uppercase tracking-widest mb-3">
+            How it works
+          </h2>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
             {STEPS.map(step => (
-              <div key={step.num} className="space-y-1">
-                <span className="text-[10px] font-mono text-blush-500 dark:text-blush-400">{step.num}</span>
-                <h3 className="text-xs font-medium text-text-primary leading-tight">{step.title}</h3>
-                <p className="text-[10px] text-text-muted leading-snug">{step.desc}</p>
+              <div key={step.num} className="flex gap-3">
+                <span className="text-lg font-light text-blush-400 dark:text-blush-500 leading-none mt-0.5">
+                  {step.num}
+                </span>
+                <div>
+                  <h3 className="text-sm font-medium text-text-primary">{step.title}</h3>
+                  <p className="text-xs text-text-muted leading-snug mt-0.5">{step.desc}</p>
+                </div>
               </div>
             ))}
           </div>
         </div>
 
+        {/* Presets */}
         <div className="border border-border bg-surface p-4">
-          <h2 className="text-[10px] font-semibold text-text-muted uppercase tracking-widest mb-3">Try an example</h2>
-          <div className="grid grid-cols-3 gap-1.5 mb-3">
+          <h2 className="text-[10px] font-semibold text-text-muted uppercase tracking-widest mb-3">
+            Try an example
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-1.5 mb-3">
             {PRESETS.map(preset => (
               <button
                 key={preset.name}
                 onClick={() => loadPreset(preset.fasta)}
-                className="text-left px-3 py-2 border border-border hover:border-blush-300 dark:hover:border-blush-700 hover:bg-blush-50/50 dark:hover:bg-blush-900/10 transition-colors group"
+                className="text-left px-3 py-2.5 border border-border hover:border-blush-300 dark:hover:border-blush-700 hover:bg-blush-50/30 dark:hover:bg-blush-900/10 transition-colors group"
               >
-                <span className="text-xs font-medium text-text-primary group-hover:text-blush-600 dark:group-hover:text-blush-400">{preset.name}</span>
-                <p className="text-[10px] text-text-muted">{preset.description}</p>
+                <span className="text-sm font-medium text-text-primary group-hover:text-blush-600 dark:group-hover:text-blush-400">
+                  {preset.name}
+                </span>
+                <p className="text-xs text-text-muted mt-0.5">{preset.description}</p>
               </button>
             ))}
           </div>
           <button
             onClick={handleRandom}
-            className="w-full px-3 py-2 border border-dashed border-border text-text-muted hover:text-blush-600 dark:hover:text-blush-400 hover:border-blush-300 dark:hover:border-blush-700 hover:bg-blush-50/50 dark:hover:bg-blush-900/10 text-xs transition-colors"
+            className="w-full px-3 py-2.5 border border-dashed border-border text-text-muted hover:text-blush-600 dark:hover:text-blush-400 hover:border-blush-300 dark:hover:border-blush-700 hover:bg-blush-50/30 dark:hover:bg-blush-900/10 text-sm transition-colors"
           >
             Generate random sequences
           </button>
@@ -76,8 +89,8 @@ export function WelcomeHero() {
 }
 
 const STEPS = [
-  { num: '01', title: 'Input', desc: 'Paste FASTA sequences or one per line' },
-  { num: '02', title: 'Configure', desc: 'Pick scoring matrix and gap penalty' },
-  { num: '03', title: 'Build', desc: 'Compute pairwise distances and render tree' },
-  { num: '04', title: 'Explore', desc: 'Step through algorithm, inspect nodes' },
+  { num: '1', title: 'Input', desc: 'Paste FASTA sequences or one per line' },
+  { num: '2', title: 'Configure', desc: 'Pick scoring matrix and gap penalty' },
+  { num: '3', title: 'Build', desc: 'Compute pairwise distances and render tree' },
+  { num: '4', title: 'Explore', desc: 'Step through algorithm, inspect nodes' },
 ]

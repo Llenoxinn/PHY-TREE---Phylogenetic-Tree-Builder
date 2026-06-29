@@ -10,7 +10,7 @@ export function TreeCanvas() {
   const svgRef = useRef<SVGSVGElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const { steps, currentStep, layoutType, selectNode } = useTreeStore()
-  const { setHovered } = useSequenceStore()
+  const { setHovered, hoveredIndex } = useSequenceStore()
   const { palette, theme } = useUIStore()
 
   const treeData = steps[currentStep]?.treeState ?? null
@@ -25,205 +25,43 @@ export function TreeCanvas() {
     const isCircular = layoutType === 'circular'
     const isDark = theme === 'dark'
 
-    const textColor = isDark ? '#e8e4f0' : '#374151'
-    const linkColor = isDark ? '#3d3860' : '#ddd'
-    const mutedColor = isDark ? '#6b6580' : '#9ca3af'
-    const nodeStroke = isDark ? '#1e1b2e' : '#fff'
+    const textColor = isDark ? '#e0def4' : '#1a1a2e'
+    const textColorMuted = isDark ? '#565f89' : '#868e96'
+    const linkColor = isDark ? '#3b3f5c' : '#c5c9d6'
+    const linkColorHover = isDark ? '#f43f5e' : '#e11d48'
+    const nodeStroke = isDark ? '#1a1b26' : '#ffffff'
+    const leafDotStroke = isDark ? '#2e3047' : '#f0f0f0'
 
     const svg = d3.select(svgEl)
     svg.selectAll('*').remove()
 
     svg.attr('viewBox', `0 0 ${width} ${height}`)
+    svg.style('font-family', 'var(--font-sans)')
 
     const defs = svg.append('defs')
-    const gradient = defs.append('linearGradient')
-      .attr('id', 'branch-gradient')
-      .attr('x1', '0%').attr('y1', '0%')
-      .attr('x2', '100%').attr('y2', '0%')
-    gradient.append('stop').attr('offset', '0%').attr('stop-color', '#fecdd3')
-    gradient.append('stop').attr('offset', '100%').attr('stop-color', '#f43f5e')
+
+    // Glow filter for hovered nodes
+    const filter = defs.append('filter').attr('id', 'glow')
+    filter.append('feGaussianBlur').attr('stdDeviation', '2').attr('result', 'coloredBlur')
+    const feMerge = filter.append('feMerge')
+    feMerge.append('feMergeNode').attr('in', 'coloredBlur')
+    feMerge.append('feMergeNode').attr('in', 'SourceGraphic')
 
     const root = d3.hierarchy(treeData)
 
     if (isCircular) {
-      const radius = Math.min(width, height) * 0.38
-      const cluster = d3.cluster<TreeNode>().size([2 * Math.PI, radius])
-      cluster(root)
-
-      const g = svg.append('g')
-        .attr('transform', `translate(${width / 2},${height / 2})`)
-
-      const zoom = d3.zoom<SVGSVGElement, unknown>()
-        .scaleExtent([0.1, 10])
-        .on('zoom', (event) => {
-          g.attr('transform', `translate(${width / 2},${height / 2}) ${event.transform}`)
-        })
-      svg.call(zoom)
-
-      const allLeaves = root.leaves()
-      const leafIndexMap = new Map<string, number>()
-      allLeaves.forEach((leaf, i) => leafIndexMap.set(leaf.data.id, i))
-
-      g.selectAll('.link')
-        .data(root.links())
-        .join('path')
-        .attr('class', 'link')
-        .attr('d', (d: any) => {
-          const sa = d.source.x as number
-          const sr = d.source.y as number
-          const ta = d.target.x as number
-          const tr = d.target.y as number
-          const toXY = (a: number, r: number) => [
-            r * Math.cos(a - Math.PI / 2),
-            r * Math.sin(a - Math.PI / 2),
-          ]
-          const [sx, sy] = toXY(sa, sr)
-          const [tx, ty] = toXY(ta, tr)
-          const [mx, my] = toXY(sa, tr)
-          return `M${sx},${sy}L${mx},${my}A${tr},${tr} 0 0,1 ${tx},${ty}`
-        })
-        .attr('fill', 'none')
-        .attr('stroke', linkColor)
-        .attr('stroke-width', 1.5)
-
-      const labelG = g.selectAll('.label')
-        .data(root.leaves())
-        .join('g')
-        .attr('class', 'label')
-        .attr('transform', (d: any) => {
-          const angle = d.x as number
-          const r = d.y as number
-          const deg = angle * 180 / Math.PI - 90
-          const flip = deg > 90 && deg < 270
-          return `rotate(${deg}) translate(${r + 8},0)${flip ? ' rotate(180)' : ''}`
-        })
-
-      labelG.append('text')
-        .attr('text-anchor', (d: any) => {
-          const deg = (d.x as number) * 180 / Math.PI - 90
-          return (deg > 90 && deg < 270) ? 'end' : 'start'
-        })
-        .attr('dy', '0.35em')
-        .style('font-size', '10px')
-        .style('font-family', 'var(--font-sans)')
-        .style('font-weight', '500')
-        .style('fill', textColor)
-        .text((d: any) => {
-          const name = d.data.name.replace(/[()]/g, '')
-          return name.length > 25 ? name.slice(0, 23) + '\u2026' : name
-        })
-
-      g.selectAll('.color-arc')
-        .data(root.leaves())
-        .join('circle')
-        .attr('r', 3)
-        .attr('cx', (d: any) => (d.y as number) * Math.cos((d.x as number) - Math.PI / 2))
-        .attr('cy', (d: any) => (d.y as number) * Math.sin((d.x as number) - Math.PI / 2))
-        .attr('fill', (d: any) => {
-          const idx = leafIndexMap.get(d.data.id)
-          return idx !== undefined ? getLeafColor(idx, palette) : '#fda4af'
-        })
-        .attr('stroke', nodeStroke)
-        .attr('stroke-width', 1.5)
-
-      g.selectAll('.node-circle')
-        .data(root.descendants().filter(d => !!d.children))
-        .join('circle')
-        .attr('cx', (d: any) => (d.y as number) * Math.cos((d.x as number) - Math.PI / 2))
-        .attr('cy', (d: any) => (d.y as number) * Math.sin((d.x as number) - Math.PI / 2))
-        .attr('r', 2.5)
-        .attr('fill', '#f43f5e')
-        .attr('stroke', nodeStroke)
-        .attr('stroke-width', 1)
-        .style('cursor', 'pointer')
-        .on('click', (_event: any, d: any) => selectNode(d.data))
-
+      drawCircular(svg, root, width, height, {
+        textColor, textColorMuted, linkColor, linkColorHover, nodeStroke, palette,
+        selectNode, setHovered, hoveredIndex, defs,
+      })
     } else {
-      const cluster = d3.cluster<TreeNode>()
-        .size([height - 60, width - 180])
-      cluster(root)
-
-      const g = svg.append('g').attr('transform', 'translate(80, 30)')
-
-      const zoom = d3.zoom<SVGSVGElement, unknown>()
-        .scaleExtent([0.1, 10])
-        .on('zoom', (event) => {
-          g.attr('transform', `translate(80,30) ${event.transform}`)
-        })
-      svg.call(zoom)
-
-      const allLeaves = root.leaves()
-      const leafIndexMap = new Map<string, number>()
-      allLeaves.forEach((leaf, i) => leafIndexMap.set(leaf.data.id, i))
-
-      g.selectAll('.link')
-        .data(root.links())
-        .join('path')
-        .attr('class', 'link')
-        .attr('d', (d: any) => {
-          const sx = d.source.y as number
-          const sy = d.source.x as number
-          const tx = d.target.y as number
-          const ty = d.target.x as number
-          return `M${sx},${sy}H${tx}V${ty}`
-        })
-        .attr('fill', 'none')
-        .attr('stroke', linkColor)
-        .attr('stroke-width', 1.5)
-
-      const node = g.selectAll('.node')
-        .data(root.descendants())
-        .join('g')
-        .attr('class', 'node')
-        .attr('transform', (d: any) => `translate(${d.y},${d.x})`)
-        .style('cursor', 'pointer')
-
-      node.append('circle')
-        .attr('r', (d: any) => d.children ? 3.5 : 5)
-        .attr('fill', (d: any) => {
-          if (!d.children) {
-            const idx = leafIndexMap.get(d.data.id)
-            return idx !== undefined ? getLeafColor(idx, palette) : '#fda4af'
-          }
-          return '#f43f5e'
-        })
-        .attr('stroke', nodeStroke)
-        .attr('stroke-width', 1.5)
-        .on('click', (_event: any, d: any) => selectNode(d.data))
-        .on('mouseenter', (_event: any, d: any) => {
-          if (!d.children) {
-            const idx = leafIndexMap.get(d.data.id)
-            if (idx !== undefined) setHovered(idx)
-          }
-        })
-        .on('mouseleave', () => setHovered(null))
-
-      node.filter((d: any) => !d.children)
-        .append('text')
-        .attr('dx', 10)
-        .attr('dy', 4)
-        .attr('text-anchor', 'start')
-        .style('font-size', '11px')
-        .style('font-family', 'var(--font-sans)')
-        .style('font-weight', '500')
-        .style('fill', textColor)
-        .text((d: any) => {
-          const name = d.data.name.replace(/[()]/g, '')
-          return name.length > 25 ? name.slice(0, 23) + '\u2026' : name
-        })
-
-      node.filter((d: any) => d.children && (d.data as any).mergeDistance !== undefined)
-        .append('text')
-        .attr('dx', -6)
-        .attr('dy', -8)
-        .attr('text-anchor', 'end')
-        .style('font-size', '8px')
-        .style('font-family', 'var(--font-mono)')
-        .style('fill', mutedColor)
-        .text((d: any) => (d.data as any).mergeDistance?.toFixed(3) ?? '')
+      drawRectangular(svg, root, width, height, {
+        textColor, textColorMuted, linkColor, linkColorHover, nodeStroke, leafDotStroke, palette,
+        selectNode, setHovered, hoveredIndex, defs,
+      })
     }
 
-  }, [treeData, layoutType, selectNode, setHovered, palette, theme])
+  }, [treeData, layoutType, selectNode, setHovered, palette, theme, hoveredIndex])
 
   useEffect(() => { draw() }, [draw])
 
@@ -238,4 +76,312 @@ export function TreeCanvas() {
       <svg ref={svgRef} className="w-full h-full" />
     </div>
   )
+}
+
+interface DrawOpts {
+  textColor: string
+  textColorMuted: string
+  linkColor: string
+  linkColorHover: string
+  nodeStroke: string
+  leafDotStroke?: string
+  palette: string
+  selectNode: (node: any) => void
+  setHovered: (idx: number | null) => void
+  hoveredIndex: number | null
+  defs: d3.Selection<SVGDefsElement, unknown, null, undefined>
+}
+
+function drawRectangular(
+  svg: d3.Selection<SVGSVGElement, unknown, null, undefined>,
+  root: d3.HierarchyNode<TreeNode>,
+  width: number,
+  height: number,
+  opts: DrawOpts,
+) {
+  const { textColor, textColorMuted, linkColor, linkColorHover, nodeStroke, leafDotStroke, palette, selectNode, setHovered, hoveredIndex } = opts
+
+  const pad = { top: 24, right: 120, bottom: 24, left: 40 }
+  const w = width - pad.left - pad.right
+  const h = height - pad.top - pad.bottom
+
+  const cluster = d3.cluster<TreeNode>().size([h, w])
+  cluster(root)
+
+  const g = svg.append('g').attr('transform', `translate(${pad.left},${pad.top})`)
+
+  // Zoom
+  const zoom = d3.zoom<SVGSVGElement, unknown>()
+    .scaleExtent([0.2, 8])
+    .on('zoom', (event) => {
+      g.attr('transform', `translate(${pad.left},${pad.top}) ${event.transform}`)
+    })
+  svg.call(zoom)
+
+  const allLeaves = root.leaves()
+  const leafIndexMap = new Map<string, number>()
+  allLeaves.forEach((leaf, i) => leafIndexMap.set(leaf.data.id, i))
+
+  // Draw links with smooth step curves
+  g.selectAll('.link')
+    .data(root.links())
+    .join('path')
+    .attr('class', 'link')
+    .attr('d', (d: any) => {
+      const sx = d.source.y as number
+      const sy = d.source.x as number
+      const tx = d.target.y as number
+      const ty = d.target.x as number
+      // Smooth L-shaped curve
+      const mx = (sx + tx) / 2
+      return `M${sx},${sy}C${mx},${sy} ${mx},${ty} ${tx},${ty}`
+    })
+    .attr('fill', 'none')
+    .attr('stroke', linkColor)
+    .attr('stroke-width', 1.2)
+    .attr('stroke-linecap', 'round')
+    .style('transition', 'stroke 0.15s')
+
+  // Draw nodes
+  const node = g.selectAll('.node')
+    .data(root.descendants())
+    .join('g')
+    .attr('class', 'node')
+    .attr('transform', (d: any) => `translate(${d.y},${d.x})`)
+
+  // Leaf nodes
+  const leafNodes = node.filter((d: any) => !d.children)
+  leafNodes.append('circle')
+    .attr('r', (d: any) => {
+      const idx = leafIndexMap.get(d.data.id)
+      return idx !== undefined && idx === hoveredIndex ? 6 : 4.5
+    })
+    .attr('fill', (d: any) => {
+      const idx = leafIndexMap.get(d.data.id)
+      return idx !== undefined ? getLeafColor(idx, palette) : '#fda4af'
+    })
+    .attr('stroke', leafDotStroke || nodeStroke)
+    .attr('stroke-width', 2)
+    .style('cursor', 'pointer')
+    .style('filter', (d: any) => {
+      const idx = leafIndexMap.get(d.data.id)
+      return idx !== undefined && idx === hoveredIndex ? 'url(#glow)' : 'none'
+    })
+    .on('click', (_event: any, d: any) => selectNode(d.data))
+    .on('mouseenter', (_event: any, d: any) => {
+      const idx = leafIndexMap.get(d.data.id)
+      if (idx !== undefined) setHovered(idx)
+    })
+    .on('mouseleave', () => setHovered(null))
+
+  // Leaf labels
+  leafNodes.append('text')
+    .attr('dx', 10)
+    .attr('dy', '0.35em')
+    .attr('text-anchor', 'start')
+    .style('font-size', '11px')
+    .style('font-weight', '500')
+    .style('fill', (d: any) => {
+      const idx = leafIndexMap.get(d.data.id)
+      return idx !== undefined && idx === hoveredIndex ? linkColorHover : textColor
+    })
+    .style('transition', 'fill 0.15s')
+    .text((d: any) => {
+      const name = d.data.name.replace(/[()]/g, '')
+      return name.length > 20 ? name.slice(0, 18) + '\u2026' : name
+    })
+
+  // Internal nodes
+  const internalNodes = node.filter((d: any) => !!d.children)
+  internalNodes.append('circle')
+    .attr('r', 2.5)
+    .attr('fill', linkColorHover)
+    .attr('stroke', nodeStroke)
+    .attr('stroke-width', 1.5)
+    .style('cursor', 'pointer')
+    .on('click', (_event: any, d: any) => selectNode(d.data))
+
+  // Merge distance labels on internal nodes
+  internalNodes.filter((d: any) => (d.data as any).mergeDistance !== undefined)
+    .append('text')
+    .attr('dx', 0)
+    .attr('dy', -7)
+    .attr('text-anchor', 'middle')
+    .style('font-size', '8px')
+    .style('font-family', 'var(--font-mono)')
+    .style('fill', textColorMuted)
+    .text((d: any) => {
+      const dist = (d.data as any).mergeDistance
+      return dist !== undefined ? dist.toFixed(3) : ''
+    })
+
+  // Scale bar
+  const maxDist = getMaxDistance(root)
+  if (maxDist > 0) {
+    const scaleWidth = w * 0.15
+    const scaleValue = roundNice(maxDist * 0.2)
+    const scaleG = svg.append('g')
+      .attr('transform', `translate(${pad.left},${height - 12})`)
+
+    scaleG.append('line')
+      .attr('x1', 0).attr('y1', 0)
+      .attr('x2', scaleWidth).attr('y2', 0)
+      .attr('stroke', textColorMuted)
+      .attr('stroke-width', 1)
+
+    scaleG.append('line')
+      .attr('x1', 0).attr('y1', -3).attr('x2', 0).attr('y2', 3)
+      .attr('stroke', textColorMuted).attr('stroke-width', 1)
+    scaleG.append('line')
+      .attr('x1', scaleWidth).attr('y1', -3).attr('x2', scaleWidth).attr('y2', 3)
+      .attr('stroke', textColorMuted).attr('stroke-width', 1)
+
+    scaleG.append('text')
+      .attr('x', scaleWidth / 2).attr('y', -6)
+      .attr('text-anchor', 'middle')
+      .style('font-size', '9px')
+      .style('font-family', 'var(--font-mono)')
+      .style('fill', textColorMuted)
+      .text(scaleValue.toFixed(3))
+  }
+}
+
+function drawCircular(
+  svg: d3.Selection<SVGSVGElement, unknown, null, undefined>,
+  root: d3.HierarchyNode<TreeNode>,
+  width: number,
+  height: number,
+  opts: DrawOpts,
+) {
+  const { textColor, textColorMuted, linkColor, linkColorHover, nodeStroke, palette, selectNode, defs } = opts
+
+  const radius = Math.min(width, height) * 0.36
+  const cluster = d3.cluster<TreeNode>().size([2 * Math.PI, radius])
+  cluster(root)
+
+  const g = svg.append('g')
+    .attr('transform', `translate(${width / 2},${height / 2})`)
+
+  const zoom = d3.zoom<SVGSVGElement, unknown>()
+    .scaleExtent([0.2, 8])
+    .on('zoom', (event) => {
+      g.attr('transform', `translate(${width / 2},${height / 2}) ${event.transform}`)
+    })
+  svg.call(zoom)
+
+  const allLeaves = root.leaves()
+  const leafIndexMap = new Map<string, number>()
+  allLeaves.forEach((leaf, i) => leafIndexMap.set(leaf.data.id, i))
+
+  const toXY = (angle: number, r: number) => [
+    r * Math.cos(angle - Math.PI / 2),
+    r * Math.sin(angle - Math.PI / 2),
+  ]
+
+  // Draw links with smooth arcs
+  g.selectAll('.link')
+    .data(root.links())
+    .join('path')
+    .attr('class', 'link')
+    .attr('d', (d: any) => {
+      const sa = d.source.x as number
+      const sr = d.source.y as number
+      const ta = d.target.x as number
+      const tr = d.target.y as number
+      const [sx, sy] = toXY(sa, sr)
+      const [tx, ty] = toXY(ta, tr)
+      const [mx, my] = toXY(sa, tr)
+      return `M${sx},${sy}L${mx},${my}A${tr},${tr} 0 0,1 ${tx},${ty}`
+    })
+    .attr('fill', 'none')
+    .attr('stroke', linkColor)
+    .attr('stroke-width', 1.2)
+    .attr('stroke-linecap', 'round')
+
+  // Leaf labels
+  const labelG = g.selectAll('.label')
+    .data(allLeaves)
+    .join('g')
+    .attr('class', 'label')
+    .attr('transform', (d: any) => {
+      const angle = d.x as number
+      const r = d.y as number
+      const deg = angle * 180 / Math.PI - 90
+      const flip = deg > 90 && deg < 270
+      return `rotate(${deg}) translate(${r + 10},0)${flip ? ' rotate(180)' : ''}`
+    })
+
+  labelG.append('text')
+    .attr('text-anchor', (d: any) => {
+      const deg = (d.x as number) * 180 / Math.PI - 90
+      return (deg > 90 && deg < 270) ? 'end' : 'start'
+    })
+    .attr('dy', '0.35em')
+    .style('font-size', '10px')
+    .style('font-weight', '500')
+    .style('fill', textColor)
+    .text((d: any) => {
+      const name = d.data.name.replace(/[()]/g, '')
+      return name.length > 18 ? name.slice(0, 16) + '\u2026' : name
+    })
+
+  // Leaf dots
+  g.selectAll('.leaf-dot')
+    .data(allLeaves)
+    .join('circle')
+    .attr('r', 4)
+    .attr('cx', (d: any) => (d.y as number) * Math.cos((d.x as number) - Math.PI / 2))
+    .attr('cy', (d: any) => (d.y as number) * Math.sin((d.x as number) - Math.PI / 2))
+    .attr('fill', (d: any) => {
+      const idx = leafIndexMap.get(d.data.id)
+      return idx !== undefined ? getLeafColor(idx, palette) : '#fda4af'
+    })
+    .attr('stroke', nodeStroke)
+    .attr('stroke-width', 2)
+    .style('cursor', 'pointer')
+    .on('click', (_event: any, d: any) => selectNode(d.data))
+
+  // Internal node dots
+  g.selectAll('.internal-dot')
+    .data(root.descendants().filter(d => !!d.children))
+    .join('circle')
+    .attr('cx', (d: any) => (d.y as number) * Math.cos((d.x as number) - Math.PI / 2))
+    .attr('cy', (d: any) => (d.y as number) * Math.sin((d.x as number) - Math.PI / 2))
+    .attr('r', 2)
+    .attr('fill', linkColorHover)
+    .attr('stroke', nodeStroke)
+    .attr('stroke-width', 1.5)
+    .style('cursor', 'pointer')
+    .on('click', (_event: any, d: any) => selectNode(d.data))
+
+  // Inner guide circle at 1/3 radius
+  g.append('circle')
+    .attr('r', radius * 0.33)
+    .attr('fill', 'none')
+    .attr('stroke', linkColor)
+    .attr('stroke-width', 0.5)
+    .attr('stroke-dasharray', '2,4')
+    .attr('opacity', 0.4)
+}
+
+function getMaxDistance(root: d3.HierarchyNode<TreeNode>): number {
+  let max = 0
+  root.descendants().forEach(d => {
+    if ((d.data as any).mergeDistance !== undefined) {
+      max = Math.max(max, (d.data as any).mergeDistance)
+    }
+  })
+  return max
+}
+
+function roundNice(value: number): number {
+  if (value <= 0) return 0
+  const magnitude = Math.pow(10, Math.floor(Math.log10(value)))
+  const normalized = value / magnitude
+  let nice: number
+  if (normalized <= 1) nice = 1
+  else if (normalized <= 2) nice = 2
+  else if (normalized <= 5) nice = 5
+  else nice = 10
+  return nice * magnitude
 }

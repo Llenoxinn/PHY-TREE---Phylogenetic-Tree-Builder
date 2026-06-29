@@ -101,7 +101,10 @@ export function randomSequence(length: number): string {
 }
 
 export function generateRandomPreset(count: number, seqLen: number): string {
-  const names = ['Seq_A', 'Seq_B', 'Seq_C', 'Seq_D', 'Seq_E', 'Seq_F', 'Seq_G', 'Seq_H', 'Seq_I', 'Seq_J']
+  const names = [
+    'Alpha', 'Beta', 'Gamma', 'Delta', 'Epsilon',
+    'Zeta', 'Eta', 'Theta', 'Iota', 'Kappa',
+  ]
   const selected = names.slice(0, count)
   return selected.map(name => `>${name}\n${randomSequence(seqLen)}`).join('\n')
 }

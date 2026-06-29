@@ -13,8 +13,8 @@ export function NodeInspectionPanel() {
   if (!showNodePanel) return null
   if (!selectedNode) {
     return (
-      <div className="text-xs text-text-muted italic p-3 border border-dashed border-border rounded-xl bg-surface text-center">
-        Click a node on the tree to inspect its details
+      <div className="text-[10px] text-text-muted italic p-2 border border-dashed border-border text-center">
+        Click a node on the tree to inspect
       </div>
     )
   }
@@ -23,32 +23,20 @@ export function NodeInspectionPanel() {
   const isLeaf = leaves.length === 1
 
   return (
-    <div className="space-y-2 p-3 border border-border rounded-xl bg-blush-50/30 dark:bg-blush-900/10">
+    <div className="space-y-2 border border-border p-2">
       <div className="flex items-center justify-between">
-        <span className="text-xs font-semibold text-blush-600 dark:text-blush-400">Node Inspector</span>
-        <button onClick={() => selectNode(null)} className="text-text-muted hover:text-blush-600 dark:hover:text-blush-400 transition-colors text-sm">✕</button>
+        <span className="text-[10px] font-semibold text-text-muted uppercase tracking-widest">Inspector</span>
+        <button onClick={() => selectNode(null)} className="text-text-muted hover:text-text-primary transition-colors text-xs leading-none">&times;</button>
       </div>
-      <div className="space-y-1.5 text-xs">
-        <div>
-          <span className="text-text-muted">Label: </span>
-          <span className="font-mono text-text-primary font-medium">{selectedNode.name.replace(/[()]/g, '')}</span>
-        </div>
+      <div className="space-y-1 text-[10px]">
+        <Row label="Name" value={selectedNode.name.replace(/[()]/g, '')} mono />
         {selectedNode.mergeStep !== undefined && (
-          <div>
-            <span className="text-text-muted">Merge Step: </span>
-            <span className="text-blush-600 dark:text-blush-400 font-bold">#{selectedNode.mergeStep}</span>
-          </div>
+          <Row label="Step" value={`#${selectedNode.mergeStep}`} accent />
         )}
         {selectedNode.mergeDistance !== undefined && (
-          <div>
-            <span className="text-text-muted">Distance: </span>
-            <span className="text-blush-600 dark:text-blush-400 font-bold font-mono">{selectedNode.mergeDistance.toFixed(4)}</span>
-          </div>
+          <Row label="Distance" value={selectedNode.mergeDistance.toFixed(4)} mono accent />
         )}
-        <div>
-          <span className="text-text-muted">Type: </span>
-          <span className={isLeaf ? 'text-blush-500 dark:text-blush-400' : 'text-text-primary'}>{isLeaf ? 'Leaf (taxon)' : 'Internal (clade)'}</span>
-        </div>
+        <Row label="Type" value={isLeaf ? 'Leaf' : 'Internal'} />
         {!isLeaf && (
           <div>
             <span className="text-text-muted">Contains: </span>
@@ -56,6 +44,17 @@ export function NodeInspectionPanel() {
           </div>
         )}
       </div>
+    </div>
+  )
+}
+
+function Row({ label, value, mono, accent }: { label: string; value: string; mono?: boolean; accent?: boolean }) {
+  return (
+    <div>
+      <span className="text-text-muted">{label}: </span>
+      <span className={`${mono ? 'font-mono' : ''} ${accent ? 'text-blush-600 dark:text-blush-400 font-medium' : 'text-text-primary'}`}>
+        {value}
+      </span>
     </div>
   )
 }
