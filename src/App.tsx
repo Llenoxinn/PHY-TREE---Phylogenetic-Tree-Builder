@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Header } from './components/layout/Header'
 import { SequenceInput } from './components/input/SequenceInput'
-import { SequenceLabels } from './components/input/SequenceLabels'
 import { MethodSelector } from './components/controls/MethodSelector'
 import { ScoringSelector } from './components/controls/ScoringSelector'
 import { LayoutToggle } from './components/controls/LayoutToggle'
@@ -11,6 +10,7 @@ import { DistanceMatrixHeatmap } from './components/visualization/DistanceMatrix
 import { NodeInspectionPanel } from './components/visualization/NodeInspectionPanel'
 import { AlgorithmExplainer } from './components/info/AlgorithmExplainer'
 import { ExamplePresets } from './components/info/ExamplePresets'
+import { TreeSettings } from './components/controls/TreeSettings'
 import { WelcomeHero } from './components/info/WelcomeHero'
 import { useSequenceStore } from './store/sequence-store'
 import { useAlignmentStore } from './store/alignment-store'
@@ -43,6 +43,8 @@ export default function App() {
   const theme = useUIStore(s => s.theme)
   const { showHeatmap, showExplainer, showNodePanel } = useUIStore()
   const [activeTab, setActiveTab] = useState<'input' | 'howto'>('input')
+  const [sidebarOpen, setSidebarOpen] = useState(true)
+  const [rightPanelOpen, setRightPanelOpen] = useState(true)
 
   const hasData = sequences.length > 0
   const hasTree = distanceMatrix.length > 0
@@ -59,16 +61,52 @@ export default function App() {
     }
   }, [rawInput])
 
+  // Auto-close panels on small screens
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 768) {
+        setSidebarOpen(false)
+        setRightPanelOpen(false)
+      } else {
+        setSidebarOpen(true)
+      }
+    }
+    handleResize()
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
+
   const handleBuild = () => {
     runFullPipeline()
   }
 
+  const showRightPanel = (showHeatmap || showExplainer || showNodePanel) && hasData && rightPanelOpen
+
   return (
     <div className="h-screen flex flex-col bg-surface-alt text-text-primary">
-      <Header />
+      <Header
+        onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
+        onToggleRightPanel={() => setRightPanelOpen(!rightPanelOpen)}
+        hasData={hasData}
+      />
 
-      <div className="flex-1 flex overflow-hidden">
-        <aside className="w-72 flex-shrink-0 border-r border-border bg-surface flex flex-col">
+      <div className="flex-1 flex overflow-hidden relative">
+        {/* Mobile sidebar overlay */}
+        {sidebarOpen && (
+          <div
+            className="fixed inset-0 bg-black/20 z-20 md:hidden"
+            onClick={() => setSidebarOpen(false)}
+          />
+        )}
+
+        {/* Left sidebar */}
+        <aside className={`
+          ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
+          fixed md:relative inset-y-0 left-0 z-30
+          w-72 md:w-64 lg:w-72 flex-shrink-0 border-r border-border bg-surface flex flex-col
+          transition-transform duration-200 ease-out
+          md:translate-x-0
+        `}>
           <div className="flex border-b border-border">
             {(['input', 'howto'] as const).map(tab => (
               <button
@@ -89,11 +127,11 @@ export default function App() {
             {activeTab === 'input' ? (
               <>
                 <SequenceInput />
-                {hasData && <SequenceLabels />}
                 <div className="h-px bg-border" />
                 <ScoringSelector />
                 <MethodSelector />
                 <LayoutToggle />
+                <TreeSettings />
                 <div className="h-px bg-border" />
                 <ExamplePresets />
               </>
@@ -103,7 +141,8 @@ export default function App() {
           </div>
         </aside>
 
-        <main className="flex-1 flex flex-col overflow-hidden relative bg-surface-alt">
+        {/* Main content */}
+        <main className="flex-1 flex flex-col overflow-hidden relative bg-surface-alt min-w-0">
           <WelcomeHero />
 
           {hasData && (
@@ -145,14 +184,25 @@ export default function App() {
           )}
         </main>
 
-        {(showHeatmap || showExplainer || showNodePanel) && hasData && (
-          <aside className="w-64 flex-shrink-0 border-l border-border bg-surface overflow-y-auto">
-            <div className="p-2 space-y-3">
-              {showExplainer && <AlgorithmExplainer />}
-              {showHeatmap && <DistanceMatrixHeatmap />}
-              {showNodePanel && <NodeInspectionPanel />}
-            </div>
-          </aside>
+        {/* Right panel */}
+        {showRightPanel && (
+          <>
+            <div
+              className="fixed inset-0 bg-black/20 z-20 lg:hidden"
+              onClick={() => setRightPanelOpen(false)}
+            />
+            <aside className={`
+              fixed lg:relative inset-y-0 right-0 z-30
+              w-64 flex-shrink-0 border-l border-border bg-surface overflow-y-auto
+              transition-transform duration-200 ease-out
+            `}>
+              <div className="p-2 space-y-3">
+                {showExplainer && <AlgorithmExplainer />}
+                {showHeatmap && <DistanceMatrixHeatmap />}
+                {showNodePanel && <NodeInspectionPanel />}
+              </div>
+            </aside>
+          </>
         )}
       </div>
     </div>
@@ -208,11 +258,20 @@ function HowItWorksPanel() {
 
       <div>
         <h3 className="font-semibold text-text-primary text-xs mb-1 uppercase tracking-wider">Keys</h3>
-        <div className="grid grid-cols-2 gap-x-3 gap-y-0.5 text-text-secondary">
-          <span className="flex items-center gap-1.5"><kbd className="bg-surface-hover border border-border px-1 py-0 font-mono text-[9px]">Space</kbd> Play/Pause</span>
-          <span className="flex items-center gap-1.5"><kbd className="bg-surface-hover border border-border px-1 py-0 font-mono text-[9px]">&larr;</kbd> Prev</span>
-          <span className="flex items-center gap-1.5"><kbd className="bg-surface-hover border border-border px-1 py-0 font-mono text-[9px]">&rarr;</kbd> Next</span>
-          <span className="flex items-center gap-1.5"><kbd className="bg-surface-hover border border-border px-1 py-0 font-mono text-[9px]">Home</kbd> First</span>
+        <div className="grid grid-cols-2 gap-2 text-text-secondary">
+          {[
+            { key: 'Space', action: 'Play / Pause' },
+            { key: '\u2190', action: 'Previous step' },
+            { key: '\u2192', action: 'Next step' },
+            { key: 'Home', action: 'First step' },
+          ].map(k => (
+            <div key={k.key} className="flex items-center gap-2">
+              <kbd className="inline-flex items-center justify-center min-w-[24px] h-5 px-1.5 bg-surface border border-border text-[9px] font-mono text-text-primary rounded">
+                {k.key}
+              </kbd>
+              <span className="text-[10px]">{k.action}</span>
+            </div>
+          ))}
         </div>
       </div>
     </div>

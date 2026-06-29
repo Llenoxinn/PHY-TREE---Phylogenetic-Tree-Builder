@@ -1,19 +1,32 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 
 export function Tooltip({ children, content }: { children: React.ReactNode; content: string }) {
   const [show, setShow] = useState(false)
+  const [position, setPosition] = useState<'top' | 'bottom'>('top')
+  const triggerRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (show && triggerRef.current) {
+      const rect = triggerRef.current.getBoundingClientRect()
+      setPosition(rect.top < 60 ? 'bottom' : 'top')
+    }
+  }, [show])
 
   return (
     <div
+      ref={triggerRef}
       className="relative inline-flex"
       onMouseEnter={() => setShow(true)}
       onMouseLeave={() => setShow(false)}
     >
       {children}
       {show && (
-        <div className="absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-2 px-2.5 py-1.5 bg-text-primary text-surface text-[10px] leading-relaxed whitespace-nowrap max-w-[220px] text-wrap border border-border shadow-lg pointer-events-none">
+        <div
+          className={`absolute z-50 left-0 px-2.5 py-1.5 bg-text-primary text-surface text-[10px] leading-relaxed max-w-[200px] border border-border shadow-lg pointer-events-none ${
+            position === 'top' ? 'bottom-full mb-2' : 'top-full mt-2'
+          }`}
+        >
           {content}
-          <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-px border-4 border-transparent border-t-text-primary" />
         </div>
       )}
     </div>
