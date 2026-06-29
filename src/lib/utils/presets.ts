@@ -1,0 +1,63 @@
+export interface Preset {
+  name: string
+  description: string
+  fasta: string
+}
+
+export const PRESETS: Preset[] = [
+  {
+    name: 'Great Apes',
+    description: 'Hominidae mitochondrial DNA',
+    fasta: `>Human
+GAGCTGGTAGACGGTACCTTAGGGATAACAGGTTAATACCCTCCCGGAG
+>Chimp
+GAGCTGGTAGACGGTACCTTAGGGATAACAGGTTAATACCCTCCCAGAG
+>Gorilla
+GAGCTGGTAGACGGTACCTTAGGGATAACAGATTAATACCCTCCCCGAG
+>Orangutan
+GAGCTGGTAGATGGTACCTTAGGGATAACATGTTAATACCTTCCCCGGG
+>Gibbon
+GAGTTGGTAGACGGTACTTTGGGGATAACAGGTTAATACCCTCCCCAAG`,
+  },
+  {
+    name: 'COVID Variants',
+    description: 'SARS-CoV-2 spike protein partial sequences',
+    fasta: `>Wuhan-Hu-1
+ATGTCTGATAATGGACCCCAAAATCAGCGAAATGCACCCCGCATTACGTTTGGTGGACCCTCAGAT
+>Alpha_B.1.1.7
+ATGTCTGATAATGGACCCCAAAATCAGCGAAATGCACCCCGCGTTACGTTTGGTGGACCCTCAGAT
+>Delta_B.1.617.2
+ATGTCTGATAATGGACCCCAAAATCAGCGAAATGCACCCCGCGTTACGTTTGGTGGACCTTCAGAT
+>Omicron_BA.1
+ATGTCTGATAATGGACCCCAAAATCAGCGAAATGCACCCCGCATTACGTTTGGTGGACCCTCAGAT
+>Beta_B.1.351
+ATGTCTGATAATGGACCCCAAAATCAGCGAAATGCACCCCGCGTTACGTTTGGTGGACCCTCGGAT`,
+  },
+  {
+    name: 'Cytochrome C',
+    description: 'Cytochrome C across mammals',
+    fasta: `>Human
+ATGGGTGATGTTGAAAAAGGCAAGAAAATCTTCGTTATGAAGTGTTCTCAATGTCACACCGTGGAA
+>Mouse
+ATGGGTGATGTTGAAAAAGGCAAGAAAATCTTCGTTATGAAGTGTTCTCAATGCCACACCGTGGAA
+>Horse
+ATGGGTGACGTTGAAAAAGGCAAGAAAATCTTCGTTATGAAGTGTTCTCAATGTCACACCGTGGAA
+>Dog
+ATGGGTGATGTTGAAAAAGGCAAGAAAATCTTCGTTATGAAGTGTTCTCAATGTCACACCGTGGAA
+>Whale
+ATGGGTGACGTTGAAAAAGGCAAGAAAATCTTCGTTATGAAGTGTTCTCAATGTCACACCGTGGAA`,
+  },
+]
+
+export function randomSequence(length: number): string {
+  const bases = ['A', 'C', 'G', 'T']
+  let seq = ''
+  for (let i = 0; i < length; i++) seq += bases[Math.floor(Math.random() * 4)]
+  return seq
+}
+
+export function generateRandomPreset(count: number, seqLen: number): string {
+  const names = ['Seq_A', 'Seq_B', 'Seq_C', 'Seq_D', 'Seq_E', 'Seq_F', 'Seq_G', 'Seq_H', 'Seq_I', 'Seq_J']
+  const selected = names.slice(0, count)
+  return selected.map(name => `>${name}\n${randomSequence(seqLen)}`).join('\n')
+}
