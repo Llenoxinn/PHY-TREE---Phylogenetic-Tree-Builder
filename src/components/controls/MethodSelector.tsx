@@ -5,23 +5,25 @@ export function MethodSelector() {
   const { method, setMethod } = useTreeStore()
 
   return (
-    <div className="space-y-2">
-      <label className="text-xs font-semibold text-blush-600">Tree Method</label>
-      <div className="flex gap-1 p-1 bg-blush-50 rounded-xl">
-        {(['upgma', 'neighbor-joining'] as TreeMethod[]).map((m) => (
+    <div className="space-y-1.5">
+      <label className="text-[10px] font-semibold text-text-muted uppercase tracking-widest">Method</label>
+      <div className="flex border border-border">
+        {(['upgma', 'neighbor-joining'] as TreeMethod[]).map(m => (
           <button
             key={m}
             onClick={() => setMethod(m)}
-            className={`flex-1 px-3 py-2 text-xs font-medium rounded-lg transition-all ${
-              method === m ? 'bg-white shadow-sm text-blush-600 shadow-blush-100' : 'text-gray-500 hover:text-gray-700'
+            className={`flex-1 px-2 py-1.5 text-[11px] font-medium transition-colors ${
+              method === m
+                ? 'bg-blush-500 text-white'
+                : 'text-text-secondary hover:bg-surface-hover'
             }`}
           >
-            {m === 'upgma' ? 'UPGMA' : 'Neighbor-Joining'}
+            {m === 'upgma' ? 'UPGMA' : 'NJ'}
           </button>
         ))}
       </div>
-      <p className="text-[10px] text-gray-400 leading-relaxed">
-        {method === 'upgma' ? 'Ultrametric — assumes clock-like evolution' : 'Additive — more biologically accurate'}
+      <p className="text-[10px] text-text-muted font-mono">
+        {method === 'upgma' ? 'ultrametric' : 'additive'}
       </p>
     </div>
   )

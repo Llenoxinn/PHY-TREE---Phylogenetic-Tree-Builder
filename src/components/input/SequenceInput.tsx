@@ -17,19 +17,19 @@ export function SequenceInput() {
   const hasSeqs = sequences.length > 0
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-1.5">
       <div className="flex items-center justify-between">
-        <label className="text-xs font-semibold text-blush-600">Sequences</label>
-        <div className="flex items-center gap-1.5">
+        <label className="text-[10px] font-semibold text-text-muted uppercase tracking-widest">Sequences</label>
+        <div className="flex items-center gap-2">
           {hasSeqs && (
-            <span className="text-[10px] bg-blush-100 text-blush-600 px-2 py-0.5 rounded-full font-medium">
-              {sequences.length} loaded
+            <span className="text-[10px] text-text-muted font-mono">
+              {sequences.length} seqs
             </span>
           )}
           {hasSeqs && (
             <button
               onClick={() => setIsEditing(!isEditing)}
-              className="text-[10px] text-blush-400 hover:text-blush-600 transition-colors"
+              className="text-[10px] text-text-muted hover:text-text-primary transition-colors"
             >
               {isEditing ? 'Done' : 'Edit'}
             </button>
@@ -44,11 +44,11 @@ export function SequenceInput() {
           onPaste={handlePaste}
           placeholder={`>Human\nGAGCTGGTAGACGGTACCT\n\n>Chimp\nGAGCTGGTAGACGGTACCT`}
           rows={8}
-          className="w-full p-3 border border-blush-100 rounded-xl resize-y bg-blush-50/30 focus:outline-none focus:ring-2 focus:ring-blush-300 focus:border-blush-400 placeholder:text-blush-300 transition-all"
-          style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', lineHeight: '1.7', letterSpacing: '0.02em' }}
+          className="w-full p-2 border border-border rounded resize-y bg-surface focus:outline-none focus:border-blush-400 placeholder:text-text-muted text-text-primary"
+          style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', lineHeight: '1.6', letterSpacing: '0.02em' }}
         />
       ) : (
-        <div className="space-y-0 border border-blush-100 rounded-xl bg-blush-50/20 overflow-hidden">
+        <div className="border border-border bg-surface">
           {sequences.map((seq, i) => {
             const errs = validationErrors[i] || []
             const errPositions = new Set(errs.map(e => e.position))
@@ -56,30 +56,30 @@ export function SequenceInput() {
             return (
               <div
                 key={seq.id}
-                className="px-3 py-2 border-b border-blush-50 last:border-b-0"
+                className="px-2 py-1.5 border-b border-border last:border-b-0 hover:bg-surface-hover transition-colors"
               >
-                <div className="flex items-center gap-2 mb-1">
+                <div className="flex items-center gap-1.5 mb-0.5">
                   <span
                     className="w-1.5 h-1.5 rounded-full flex-shrink-0"
                     style={{ backgroundColor: color }}
                   />
-                  <span className="text-[11px] font-semibold" style={{ color }}>
+                  <span className="text-[10px] font-medium" style={{ color }}>
                     {seq.label}
                   </span>
-                  <span className="text-[9px] text-gray-400 ml-auto font-mono">
-                    {seq.raw.length} bp
+                  <span className="text-[9px] text-text-muted ml-auto font-mono">
+                    {seq.raw.length}bp
                   </span>
                 </div>
                 <div
-                  className="break-all text-[10px] text-gray-600 leading-relaxed"
-                  style={{ fontFamily: 'var(--font-mono)', letterSpacing: '0.04em' }}
+                  className="break-all text-[10px] text-text-secondary leading-relaxed font-mono"
+                  style={{ letterSpacing: '0.04em' }}
                 >
                   {seq.raw.split('').map((char, pos) => (
                     <span
                       key={pos}
                       className={
                         errPositions.has(pos)
-                          ? 'text-red-500 font-bold bg-red-100 rounded px-px'
+                          ? 'text-red-500 font-bold bg-red-100 dark:bg-red-900/30 px-px'
                           : undefined
                       }
                     >
@@ -94,14 +94,12 @@ export function SequenceInput() {
       )}
 
       {validationErrors.some(e => e.length > 0) && (
-        <div className="flex items-center gap-1.5 text-[10px] text-red-500 bg-red-50 px-2 py-1 rounded-lg">
-          <span className="w-1.5 h-1.5 bg-red-400 rounded-full" />
+        <div className="text-[10px] text-red-500 font-mono">
           {validationErrors.flat().length} invalid character(s) found
         </div>
       )}
       {sequences.length > 0 && sequences.length < 2 && (
-        <div className="flex items-center gap-1.5 text-[10px] text-amber-600 bg-amber-50 px-2 py-1 rounded-lg">
-          <span className="w-1.5 h-1.5 bg-amber-400 rounded-full" />
+        <div className="text-[10px] text-amber-600 dark:text-amber-400 font-mono">
           Need at least 2 sequences to build a tree
         </div>
       )}

@@ -45,9 +45,11 @@ export function computeNeighborJoining(labels: string[], distanceMatrix: number[
     if (minI === -1) break
 
     const dist = matrix[minI][minJ] || 0
+    const labelA = currentLabels[minI]
+    const labelB = currentLabels[minJ]
     const parent: TreeNode = {
       id: `node-${n + steps.length - 1}`,
-      name: `(${currentLabels[minI]}+${currentLabels[minJ]})`,
+      name: `(${labelA}+${labelB})`,
       distance: dist,
       children: [nodes[minI], nodes[minJ]],
       mergeStep: steps.length,
@@ -78,7 +80,7 @@ export function computeNeighborJoining(labels: string[], distanceMatrix: number[
     }
 
     nodes = [...keepIdx.map(k => nodes[k]), parent]
-    currentLabels = [...keepIdx.map(k => currentLabels[k]), `(${currentLabels[minI]}+${currentLabels[minJ]})`]
+    currentLabels = [...keepIdx.map(k => currentLabels[k]), `(${labelA}+${labelB})`]
     matrix = newMatrix
 
     steps.push({
@@ -90,7 +92,7 @@ export function computeNeighborJoining(labels: string[], distanceMatrix: number[
       treeState: JSON.parse(JSON.stringify({
         id: 'root', name: 'root', distance: 0, children: [...nodes],
       })),
-      description: `Joined "${currentLabels[currentLabels.length - 1]}" at distance ${dist.toFixed(4)}`,
+      description: `Joined ${labelA} + ${labelB} at distance ${dist.toFixed(4)}`,
     })
   }
 

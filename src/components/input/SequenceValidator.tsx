@@ -7,7 +7,7 @@ export function SequenceValidator() {
 
   return (
     <div className="space-y-2">
-      <label className="text-xs font-semibold text-blush-600">Sequence Preview</label>
+      <label className="text-xs font-semibold text-blush-600 dark:text-blush-400">Sequence Preview</label>
       <div className="space-y-1.5 max-h-48 overflow-y-auto">
         {sequences.map((seq, i) => {
           const errs = validationErrors[i] || []
@@ -17,8 +17,8 @@ export function SequenceValidator() {
               key={seq.id}
               className={`p-2.5 rounded-xl border transition-all ${
                 hoveredIndex === i
-                  ? 'bg-blush-50 border-blush-200 shadow-sm'
-                  : 'border-blush-50 hover:bg-gray-50/50'
+                  ? 'bg-blush-50 dark:bg-blush-900/20 border-blush-200 dark:border-blush-800 shadow-sm'
+                  : 'border-border hover:bg-surface-hover'
               }`}
             >
               <div className="flex items-center gap-2 mb-1.5">
@@ -28,8 +28,8 @@ export function SequenceValidator() {
                     backgroundColor: ['#4e79a7', '#f28e2b', '#e15759', '#76b7b2', '#59a14f', '#edc948', '#b07aa1', '#ff9da7'][i % 8],
                   }}
                 />
-                <span className="font-semibold text-gray-700 text-[11px]">{seq.label}</span>
-                <span className="text-gray-400 text-[9px] ml-auto">{seq.raw.length} bp</span>
+                <span className="font-semibold text-text-primary text-[11px]">{seq.label}</span>
+                <span className="text-text-muted text-[9px] ml-auto">{seq.raw.length} bp</span>
               </div>
               <div
                 className="break-all leading-relaxed text-[10px]"
@@ -38,8 +38,8 @@ export function SequenceValidator() {
                 {seq.raw.split('').map((char, pos) => (
                   <span
                     key={pos}
-                    className={positions.has(pos) ? 'text-red-500 font-bold bg-red-100 rounded px-px' : ''}
-                    style={!positions.has(pos) ? { color: '#374151' } : undefined}
+                    className={positions.has(pos) ? 'text-red-500 font-bold bg-red-100 dark:bg-red-900/30 rounded px-px' : ''}
+                    style={!positions.has(pos) ? { color: 'var(--color-text-secondary)' } : undefined}
                   >
                     {char}
                   </span>

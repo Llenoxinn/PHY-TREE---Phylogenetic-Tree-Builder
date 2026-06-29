@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react'
 import { Header } from './components/layout/Header'
 import { SequenceInput } from './components/input/SequenceInput'
 import { SequenceLabels } from './components/input/SequenceLabels'
-import { SequenceValidator } from './components/input/SequenceValidator'
 import { MethodSelector } from './components/controls/MethodSelector'
 import { ScoringSelector } from './components/controls/ScoringSelector'
 import { LayoutToggle } from './components/controls/LayoutToggle'
@@ -65,37 +64,37 @@ export default function App() {
   }
 
   return (
-    <div className={`h-screen flex flex-col ${theme === 'dark' ? 'bg-gray-950 text-white' : 'bg-blush-50/30 text-gray-900'}`}>
+    <div className="h-screen flex flex-col bg-surface-alt text-text-primary">
       <Header />
 
       <div className="flex-1 flex overflow-hidden">
-        <aside className={`w-80 flex-shrink-0 border-r flex flex-col ${theme === 'dark' ? 'border-gray-800 bg-gray-900' : 'border-blush-100 bg-white'}`}>
-          <div className="flex border-b border-blush-100">
-            <button
-              onClick={() => setActiveTab('input')}
-              className={`flex-1 px-4 py-2.5 text-xs font-semibold transition-colors ${activeTab === 'input' ? 'text-blush-600 border-b-2 border-blush-500 bg-blush-50/50' : 'text-gray-400 hover:text-gray-600'}`}
-            >
-              Sequences
-            </button>
-            <button
-              onClick={() => setActiveTab('howto')}
-              className={`flex-1 px-4 py-2.5 text-xs font-semibold transition-colors ${activeTab === 'howto' ? 'text-blush-600 border-b-2 border-blush-500 bg-blush-50/50' : 'text-gray-400 hover:text-gray-600'}`}
-            >
-              How It Works
-            </button>
+        <aside className="w-72 flex-shrink-0 border-r border-border bg-surface flex flex-col">
+          <div className="flex border-b border-border">
+            {(['input', 'howto'] as const).map(tab => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={`flex-1 px-3 py-2 text-[11px] font-medium uppercase tracking-wider transition-colors ${
+                  activeTab === tab
+                    ? 'text-blush-600 dark:text-blush-400 border-b-2 border-blush-500'
+                    : 'text-text-muted hover:text-text-secondary'
+                }`}
+              >
+                {tab === 'input' ? 'Input' : 'Guide'}
+              </button>
+            ))}
           </div>
 
-          <div className="flex-1 overflow-y-auto p-4 space-y-4">
+          <div className="flex-1 overflow-y-auto p-3 space-y-3">
             {activeTab === 'input' ? (
               <>
                 <SequenceInput />
                 {hasData && <SequenceLabels />}
-                {hasData && <SequenceValidator />}
-                <div className="h-px bg-blush-100" />
+                <div className="h-px bg-border" />
                 <ScoringSelector />
                 <MethodSelector />
                 <LayoutToggle />
-                <div className="h-px bg-blush-100" />
+                <div className="h-px bg-border" />
                 <ExamplePresets />
               </>
             ) : (
@@ -104,16 +103,16 @@ export default function App() {
           </div>
         </aside>
 
-        <main className="flex-1 flex flex-col overflow-hidden relative bg-white">
+        <main className="flex-1 flex flex-col overflow-hidden relative bg-surface-alt">
           <WelcomeHero />
 
           {hasData && (
             <div className="flex-1 relative" id="tree-svg-container">
               {isComputing && (
-                <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/80">
-                  <div className="flex items-center gap-3 bg-blush-50 px-5 py-3 rounded-xl border border-blush-200 shadow-sm">
-                    <div className="w-4 h-4 border-2 border-blush-300 border-t-blush-600 rounded-full animate-spin" />
-                    <span className="text-sm text-blush-600 font-medium">Computing alignments...</span>
+                <div className="absolute inset-0 z-10 flex items-center justify-center bg-surface/80">
+                  <div className="flex items-center gap-2 bg-surface px-4 py-2 border border-border text-xs text-text-secondary">
+                    <div className="w-3 h-3 border-2 border-blush-300 border-t-blush-600 rounded-full animate-spin" />
+                    Computing alignments...
                   </div>
                 </div>
               )}
@@ -122,23 +121,23 @@ export default function App() {
           )}
 
           {hasData && (
-            <div className="border-t border-blush-100 p-3 bg-white flex-shrink-0">
+            <div className="border-t border-border px-3 py-2 bg-surface flex-shrink-0">
               <StepReplayControls />
-              <div className="flex items-center gap-2 mt-2">
+              <div className="flex items-center gap-2 mt-1.5">
                 <button
                   onClick={handleBuild}
                   disabled={sequences.length < 2}
-                  className={`px-4 py-2 text-xs font-semibold rounded-lg transition-all shadow-sm ${
+                  className={`px-3 py-1.5 text-[11px] font-medium rounded transition-colors ${
                     sequences.length < 2
-                      ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                      : 'bg-blush-500 text-white hover:bg-blush-600 hover:shadow-md active:scale-95'
+                      ? 'bg-surface-hover text-text-muted cursor-not-allowed'
+                      : 'bg-blush-500 text-white hover:bg-blush-600 active:bg-blush-700'
                   }`}
                 >
-                  {hasTree ? 'Re-Run Analysis' : 'Build Tree'}
+                  {hasTree ? 'Re-Run' : 'Build Tree'}
                 </button>
                 {hasTree && (
-                  <span className="text-[11px] text-gray-400">
-                    {sequences.length} taxa loaded
+                  <span className="text-[10px] text-text-muted font-mono">
+                    {sequences.length} taxa
                   </span>
                 )}
               </div>
@@ -147,8 +146,8 @@ export default function App() {
         </main>
 
         {(showHeatmap || showExplainer || showNodePanel) && hasData && (
-          <aside className={`w-72 flex-shrink-0 border-l overflow-y-auto ${theme === 'dark' ? 'border-gray-800 bg-gray-900' : 'border-blush-100 bg-white'}`}>
-            <div className="p-3 space-y-4">
+          <aside className="w-64 flex-shrink-0 border-l border-border bg-surface overflow-y-auto">
+            <div className="p-2 space-y-3">
               {showExplainer && <AlgorithmExplainer />}
               {showHeatmap && <DistanceMatrixHeatmap />}
               {showNodePanel && <NodeInspectionPanel />}
@@ -162,65 +161,58 @@ export default function App() {
 
 function HowItWorksPanel() {
   return (
-    <div className="space-y-5 text-xs">
+    <div className="space-y-4 text-[11px]">
       <div>
-        <h3 className="font-bold text-blush-600 text-sm mb-2">What is PhyTree?</h3>
-        <p className="text-gray-600 leading-relaxed">
-          PhyTree is an interactive phylogenetic tree builder. It takes DNA sequences,
-          computes pairwise genetic distances using alignment algorithms, and renders
-          an evolutionary tree that shows how species or genes are related.
+        <h3 className="font-semibold text-text-primary text-xs mb-1 uppercase tracking-wider">Overview</h3>
+        <p className="text-text-secondary leading-relaxed">
+          Takes DNA sequences, computes pairwise distances via Needleman-Wunsch alignment,
+          and renders an evolutionary tree using UPGMA or Neighbor-Joining.
         </p>
       </div>
 
       <div>
-        <h3 className="font-bold text-blush-600 text-sm mb-2">Step-by-Step Guide</h3>
-        <ol className="space-y-2 text-gray-600">
+        <h3 className="font-semibold text-text-primary text-xs mb-1 uppercase tracking-wider">Steps</h3>
+        <ol className="space-y-1.5 text-text-secondary">
           <li className="flex gap-2">
-            <span className="w-5 h-5 bg-blush-100 text-blush-600 rounded-full flex items-center justify-center flex-shrink-0 text-[10px] font-bold">1</span>
-            <span><strong>Input sequences:</strong> Paste DNA sequences in FASTA format, or one per line. You can also upload a .fasta file.</span>
+            <span className="text-text-muted font-mono w-4 text-right flex-shrink-0">01</span>
+            <span>Paste sequences in FASTA format or one per line</span>
           </li>
           <li className="flex gap-2">
-            <span className="w-5 h-5 bg-blush-100 text-blush-600 rounded-full flex items-center justify-center flex-shrink-0 text-[10px] font-bold">2</span>
-            <span><strong>Choose scoring:</strong> Select a scoring matrix (Simple for DNA, BLOSUM62 for proteins) and gap penalty.</span>
+            <span className="text-text-muted font-mono w-4 text-right flex-shrink-0">02</span>
+            <span>Select scoring matrix and gap penalty</span>
           </li>
           <li className="flex gap-2">
-            <span className="w-5 h-5 bg-blush-100 text-blush-600 rounded-full flex items-center justify-center flex-shrink-0 text-[10px] font-bold">3</span>
-            <span><strong>Build the tree:</strong> Click "Build Tree" to compute pairwise alignments and render the evolutionary tree.</span>
+            <span className="text-text-muted font-mono w-4 text-right flex-shrink-0">03</span>
+            <span>Click Build Tree to compute and render</span>
           </li>
           <li className="flex gap-2">
-            <span className="w-5 h-5 bg-blush-100 text-blush-600 rounded-full flex items-center justify-center flex-shrink-0 text-[10px] font-bold">4</span>
-            <span><strong>Explore:</strong> Use the replay controls to step through the algorithm. Click nodes to inspect. Zoom and pan.</span>
+            <span className="text-text-muted font-mono w-4 text-right flex-shrink-0">04</span>
+            <span>Step through algorithm, click nodes, zoom/pan</span>
           </li>
         </ol>
       </div>
 
       <div>
-        <h3 className="font-bold text-blush-600 text-sm mb-2">Tree Methods</h3>
-        <div className="space-y-2">
-          <div className="bg-blush-50 rounded-lg p-3">
-            <span className="font-semibold text-gray-800">UPGMA</span>
-            <p className="text-gray-500 mt-1">
-              Simple hierarchical clustering. Assumes all species evolve at the same rate
-              (molecular clock). Produces an ultrametric tree.
-            </p>
+        <h3 className="font-semibold text-text-primary text-xs mb-1 uppercase tracking-wider">Methods</h3>
+        <div className="space-y-1.5 text-text-secondary">
+          <div className="flex gap-2">
+            <span className="font-mono text-blush-500 dark:text-blush-400 w-10 flex-shrink-0">UPGMA</span>
+            <span>Ultrametric, clock-like assumption</span>
           </div>
-          <div className="bg-blush-50 rounded-lg p-3">
-            <span className="font-semibold text-gray-800">Neighbor-Joining</span>
-            <p className="text-gray-500 mt-1">
-              More biologically accurate. Corrects for unequal evolutionary rates.
-              Produces an additive tree with variable branch lengths.
-            </p>
+          <div className="flex gap-2">
+            <span className="font-mono text-blush-500 dark:text-blush-400 w-10 flex-shrink-0">NJ</span>
+            <span>Additive, rate-corrected</span>
           </div>
         </div>
       </div>
 
       <div>
-        <h3 className="font-bold text-blush-600 text-sm mb-2">Keyboard Shortcuts</h3>
-        <div className="grid grid-cols-2 gap-1 text-gray-500">
-          <span><kbd className="bg-gray-100 px-1.5 py-0.5 rounded text-[10px]">Space</kbd> Play/Pause</span>
-          <span><kbd className="bg-gray-100 px-1.5 py-0.5 rounded text-[10px]">&rarr;</kbd> Next step</span>
-          <span><kbd className="bg-gray-100 px-1.5 py-0.5 rounded text-[10px]">&larr;</kbd> Previous step</span>
-          <span><kbd className="bg-gray-100 px-1.5 py-0.5 rounded text-[10px]">Home</kbd> First step</span>
+        <h3 className="font-semibold text-text-primary text-xs mb-1 uppercase tracking-wider">Keys</h3>
+        <div className="grid grid-cols-2 gap-x-3 gap-y-0.5 text-text-secondary">
+          <span className="flex items-center gap-1.5"><kbd className="bg-surface-hover border border-border px-1 py-0 font-mono text-[9px]">Space</kbd> Play/Pause</span>
+          <span className="flex items-center gap-1.5"><kbd className="bg-surface-hover border border-border px-1 py-0 font-mono text-[9px]">&larr;</kbd> Prev</span>
+          <span className="flex items-center gap-1.5"><kbd className="bg-surface-hover border border-border px-1 py-0 font-mono text-[9px]">&rarr;</kbd> Next</span>
+          <span className="flex items-center gap-1.5"><kbd className="bg-surface-hover border border-border px-1 py-0 font-mono text-[9px]">Home</kbd> First</span>
         </div>
       </div>
     </div>

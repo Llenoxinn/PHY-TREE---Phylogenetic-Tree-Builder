@@ -18,24 +18,24 @@ export function ExamplePresets() {
   }
 
   return (
-    <div className="space-y-2">
-      <label className="text-xs font-semibold text-blush-600">Quick Start</label>
-      <div className="space-y-1.5">
-        {PRESETS.map((preset) => (
+    <div className="space-y-1.5">
+      <label className="text-[10px] font-semibold text-text-muted uppercase tracking-widest">Presets</label>
+      <div className="space-y-0.5 max-h-56 overflow-y-auto">
+        {PRESETS.map(preset => (
           <button
             key={preset.name}
             onClick={() => loadPreset(preset.fasta)}
-            className="w-full text-left px-3 py-2 rounded-xl border border-blush-100 hover:border-blush-300 hover:bg-blush-50 transition-all group"
+            className="w-full text-left px-2 py-1.5 hover:bg-surface-hover transition-colors group"
           >
-            <span className="text-xs font-semibold text-gray-700 group-hover:text-blush-600">{preset.name}</span>
-            <p className="text-[10px] text-gray-400">{preset.description}</p>
+            <span className="text-[11px] font-medium text-text-primary group-hover:text-blush-600 dark:group-hover:text-blush-400">{preset.name}</span>
+            <p className="text-[10px] text-text-muted">{preset.description}</p>
           </button>
         ))}
         <button
           onClick={handleRandom}
-          className="w-full text-left px-3 py-2 rounded-xl border border-dashed border-blush-200 text-blush-500 hover:bg-blush-50 hover:border-blush-300 text-xs font-medium transition-all"
+          className="w-full text-left px-2 py-1.5 text-text-muted hover:text-blush-600 dark:hover:text-blush-400 hover:bg-surface-hover transition-colors text-[11px] font-medium"
         >
-          Generate Random
+          + Random sequences
         </button>
       </div>
     </div>

@@ -5,6 +5,7 @@ import { toNewick } from '../../lib/io/newick-exporter'
 import { matrixToCSV, downloadCSV } from '../../lib/utils/matrix'
 import { useAlignmentStore } from '../../store/alignment-store'
 import { useSequenceStore } from '../../store/sequence-store'
+import { PhyTreeLogo } from './PhyTreeLogo'
 
 export function Header() {
   const { palette, setPalette, theme, setTheme, toggleHeatmap, toggleExplainer, toggleNodePanel, showHeatmap, showExplainer, showNodePanel } = useUIStore()
@@ -37,66 +38,68 @@ export function Header() {
   }
 
   return (
-    <header className="h-14 bg-surface border-b border-border flex items-center px-5 gap-4 flex-shrink-0">
-      <div className="flex items-center gap-2.5">
-        <div className="w-8 h-8 bg-blush-500 rounded-lg flex items-center justify-center shadow-sm">
-          <span className="text-white font-bold text-sm">P</span>
-        </div>
-        <div>
-          <h1 className="text-base font-bold text-text-primary leading-tight">PhyTree</h1>
-          <p className="text-[10px] text-blush-400 font-medium leading-tight">Phylogenetic Tree Builder</p>
-        </div>
+    <header className="h-10 bg-surface border-b border-border flex items-center px-3 gap-3 flex-shrink-0">
+      <div className="flex items-center gap-2">
+        <PhyTreeLogo size={22} />
+        <span className="text-sm font-semibold text-text-primary tracking-tight">PhyTree</span>
       </div>
 
-      <div className="h-6 w-px bg-border mx-2" />
+      <div className="h-4 w-px bg-border" />
 
-      <nav className="flex items-center gap-1 text-xs">
-        <span className="text-text-muted mr-1">Export:</span>
-        <button onClick={handleSVG} className="px-2 py-1 rounded hover:bg-blush-50 dark:hover:bg-surface-hover text-text-secondary hover:text-blush-600 transition-colors">SVG</button>
-        <button onClick={handlePNG} className="px-2 py-1 rounded hover:bg-blush-50 dark:hover:bg-surface-hover text-text-secondary hover:text-blush-600 transition-colors">PNG</button>
-        <button onClick={handleNewick} className="px-2 py-1 rounded hover:bg-blush-50 dark:hover:bg-surface-hover text-text-secondary hover:text-blush-600 transition-colors" disabled={!fullTree}>Newick</button>
-        <button onClick={handleCSV} className="px-2 py-1 rounded hover:bg-blush-50 dark:hover:bg-surface-hover text-text-secondary hover:text-blush-600 transition-colors" disabled={distanceMatrix.length === 0}>CSV</button>
-      </nav>
+      <div className="flex items-center gap-0.5 text-[11px]">
+        <span className="text-text-muted mr-1">Export</span>
+        {[
+          { label: 'SVG', fn: handleSVG, enabled: true },
+          { label: 'PNG', fn: handlePNG, enabled: true },
+          { label: 'Newick', fn: handleNewick, enabled: !!fullTree },
+          { label: 'CSV', fn: handleCSV, enabled: distanceMatrix.length > 0 },
+        ].map(btn => (
+          <button
+            key={btn.label}
+            onClick={btn.fn}
+            disabled={!btn.enabled}
+            className="px-1.5 py-0.5 text-text-secondary hover:text-text-primary hover:bg-surface-hover disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+          >
+            {btn.label}
+          </button>
+        ))}
+      </div>
 
-      <div className="h-6 w-px bg-border mx-2" />
+      <div className="h-4 w-px bg-border" />
 
-      <div className="flex items-center gap-1 text-xs">
-        <span className="text-text-muted mr-1">Palette:</span>
-        {(['default', 'colorblind', 'vibrant'] as const).map((p) => (
+      <div className="flex items-center gap-0.5 text-[11px]">
+        <span className="text-text-muted mr-1">Palette</span>
+        {(['default', 'colorblind', 'vibrant'] as const).map(p => (
           <button
             key={p}
             onClick={() => setPalette(p)}
-            className={`px-2 py-1 rounded transition-colors ${palette === p ? 'bg-blush-100 dark:bg-blush-900/30 text-blush-700 dark:text-blush-400 font-medium' : 'text-text-secondary hover:bg-blush-50 dark:hover:bg-surface-hover'}`}
+            className={`px-1.5 py-0.5 transition-colors ${palette === p ? 'text-blush-600 dark:text-blush-400 font-medium' : 'text-text-secondary hover:text-text-primary hover:bg-surface-hover'}`}
           >
             {p}
           </button>
         ))}
       </div>
 
-      <div className="h-6 w-px bg-border mx-2" />
+      <div className="h-4 w-px bg-border" />
 
-      <div className="flex items-center gap-1 text-xs">
-        <button
-          onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
-          className="px-2 py-1 rounded hover:bg-blush-50 dark:hover:bg-surface-hover text-text-secondary"
-        >
-          {theme === 'light' ? '☾' : '☀'}
-        </button>
-      </div>
+      <button
+        onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
+        className="px-1.5 py-0.5 text-text-secondary hover:text-text-primary hover:bg-surface-hover transition-colors text-[11px]"
+      >
+        {theme === 'light' ? 'Dark' : 'Light'}
+      </button>
 
-      <div className="ml-auto flex items-center gap-1 text-xs">
-        <label className="flex items-center gap-1 text-text-secondary hover:text-blush-600 cursor-pointer">
-          <input type="checkbox" checked={showHeatmap} onChange={toggleHeatmap} className="w-3 h-3 accent-blush-500" />
-          <span>Heatmap</span>
-        </label>
-        <label className="flex items-center gap-1 text-text-secondary hover:text-blush-600 cursor-pointer">
-          <input type="checkbox" checked={showExplainer} onChange={toggleExplainer} className="w-3 h-3 accent-blush-500" />
-          <span>Explain</span>
-        </label>
-        <label className="flex items-center gap-1 text-text-secondary hover:text-blush-600 cursor-pointer">
-          <input type="checkbox" checked={showNodePanel} onChange={toggleNodePanel} className="w-3 h-3 accent-blush-500" />
-          <span>Inspector</span>
-        </label>
+      <div className="ml-auto flex items-center gap-2 text-[11px]">
+        {[
+          { label: 'Heatmap', checked: showHeatmap, toggle: toggleHeatmap },
+          { label: 'Explain', checked: showExplainer, toggle: toggleExplainer },
+          { label: 'Inspector', checked: showNodePanel, toggle: toggleNodePanel },
+        ].map(item => (
+          <label key={item.label} className="flex items-center gap-1 text-text-secondary hover:text-text-primary cursor-pointer select-none">
+            <input type="checkbox" checked={item.checked} onChange={item.toggle} className="w-3 h-3 accent-blush-500 rounded-sm" />
+            {item.label}
+          </label>
+        ))}
       </div>
     </header>
   )

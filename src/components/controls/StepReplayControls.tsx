@@ -44,34 +44,46 @@ export function StepReplayControls() {
   const progress = steps.length > 1 ? (currentStep / (steps.length - 1)) * 100 : 0
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-1.5">
       <div className="flex items-center justify-between">
-        <span className="text-xs font-semibold text-blush-600">Step {currentStep} / {steps.length - 1}</span>
-        <span className="text-[10px] text-gray-400 max-w-xs truncate">{steps[currentStep]?.description}</span>
+        <span className="text-[10px] font-mono text-text-muted">
+          Step {currentStep}/{steps.length - 1}
+        </span>
+        <span className="text-[10px] text-text-muted max-w-xs truncate">
+          {steps[currentStep]?.description}
+        </span>
       </div>
 
-      <div className="relative h-2 bg-blush-100 rounded-full overflow-hidden">
+      <div className="relative h-1 bg-border rounded-full overflow-hidden">
         <div
-          className="absolute h-full bg-gradient-to-r from-blush-400 to-blush-500 rounded-full transition-all duration-300"
+          className="absolute h-full bg-blush-500 rounded-full transition-all duration-200"
           style={{ width: `${progress}%` }}
         />
       </div>
 
-      <div className="flex items-center justify-center gap-1.5">
-        <button onClick={() => goToStep(0)} className="p-2 rounded-lg hover:bg-blush-50 text-gray-500 hover:text-blush-600 transition-colors" title="First step">|&lt;&lt;</button>
-        <button onClick={prevStep} className="p-2 rounded-lg hover:bg-blush-50 text-gray-500 hover:text-blush-600 transition-colors" title="Previous step">&lt;</button>
+      <div className="flex items-center justify-center gap-1">
+        <button onClick={() => goToStep(0)} className="p-1 text-text-muted hover:text-text-primary transition-colors text-xs" title="First step">
+          |&lt;
+        </button>
+        <button onClick={prevStep} className="p-1 text-text-muted hover:text-text-primary transition-colors text-xs" title="Previous step">
+          &lt;
+        </button>
         <button
           onClick={() => isPlaying ? pause() : play()}
-          className="px-5 py-2 rounded-xl bg-blush-500 text-white text-xs font-bold hover:bg-blush-600 shadow-sm shadow-blush-200 hover:shadow-md transition-all active:scale-95"
+          className="px-3 py-1 bg-blush-500 text-white text-[10px] font-medium hover:bg-blush-600 transition-colors"
         >
           {isPlaying ? 'Pause' : 'Play'}
         </button>
-        <button onClick={nextStep} className="p-2 rounded-lg hover:bg-blush-50 text-gray-500 hover:text-blush-600 transition-colors" title="Next step">&gt;</button>
-        <button onClick={() => goToStep(steps.length - 1)} className="p-2 rounded-lg hover:bg-blush-50 text-gray-500 hover:text-blush-600 transition-colors" title="Last step">&gt;&gt;|</button>
+        <button onClick={nextStep} className="p-1 text-text-muted hover:text-text-primary transition-colors text-xs" title="Next step">
+          &gt;
+        </button>
+        <button onClick={() => goToStep(steps.length - 1)} className="p-1 text-text-muted hover:text-text-primary transition-colors text-xs" title="Last step">
+          &gt;|
+        </button>
         <select
           value={playSpeed}
           onChange={(e) => setPlaySpeed(Number(e.target.value))}
-          className="ml-2 text-[10px] border border-blush-200 rounded-lg px-2 py-1.5 bg-white focus:outline-none focus:ring-1 focus:ring-blush-300"
+          className="ml-1 text-[10px] border border-border px-1.5 py-0.5 bg-surface text-text-primary focus:outline-none font-mono"
         >
           <option value={2000}>0.5x</option>
           <option value={1000}>1x</option>

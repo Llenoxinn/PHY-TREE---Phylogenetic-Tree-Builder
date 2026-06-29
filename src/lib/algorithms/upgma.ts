@@ -51,7 +51,9 @@ export function computeUPGMA(labels: string[], distanceMatrix: number[][]): Merg
     if (minI === -1) break
 
     const mergedIndices = [...clusters[minI].indices, ...clusters[minJ].indices]
-    const mergedLabel = `(${currentLabels[minI]}+${currentLabels[minJ]})`
+    const labelA = currentLabels[minI]
+    const labelB = currentLabels[minJ]
+    const mergedLabel = `(${labelA}+${labelB})`
     const newSize = clusters[minI].size + clusters[minJ].size
 
     const parent: TreeNode = {
@@ -108,7 +110,7 @@ export function computeUPGMA(labels: string[], distanceMatrix: number[][]): Merg
       treeState: JSON.parse(JSON.stringify({
         id: 'root', name: 'root', distance: 0, children: nodes,
       })),
-      description: `Merged "${currentLabels[currentLabels.length - 1]}" at distance ${minDist.toFixed(4)}`,
+      description: `Merged ${labelA} + ${labelB} at distance ${minDist.toFixed(4)}`,
     })
   }
 

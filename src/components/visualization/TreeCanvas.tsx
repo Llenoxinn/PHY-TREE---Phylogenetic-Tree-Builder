@@ -11,7 +11,7 @@ export function TreeCanvas() {
   const containerRef = useRef<HTMLDivElement>(null)
   const { steps, currentStep, layoutType, selectNode } = useTreeStore()
   const { setHovered } = useSequenceStore()
-  const { palette } = useUIStore()
+  const { palette, theme } = useUIStore()
 
   const treeData = steps[currentStep]?.treeState ?? null
 
@@ -23,6 +23,12 @@ export function TreeCanvas() {
     const width = container.clientWidth || 600
     const height = container.clientHeight || 400
     const isCircular = layoutType === 'circular'
+    const isDark = theme === 'dark'
+
+    const textColor = isDark ? '#e8e4f0' : '#374151'
+    const linkColor = isDark ? '#3d3860' : '#ddd'
+    const mutedColor = isDark ? '#6b6580' : '#9ca3af'
+    const nodeStroke = isDark ? '#1e1b2e' : '#fff'
 
     const svg = d3.select(svgEl)
     svg.selectAll('*').remove()
@@ -58,9 +64,6 @@ export function TreeCanvas() {
       const leafIndexMap = new Map<string, number>()
       allLeaves.forEach((leaf, i) => leafIndexMap.set(leaf.data.id, i))
 
-      // Circular links — each parent connects to child with:
-      // 1) radial line from parent radius to child radius (at parent angle)
-      // 2) arc at child radius from parent angle to child angle
       g.selectAll('.link')
         .data(root.links())
         .join('path')
@@ -76,15 +79,13 @@ export function TreeCanvas() {
           ]
           const [sx, sy] = toXY(sa, sr)
           const [tx, ty] = toXY(ta, tr)
-          // Elbow: radial line out, then arc along child's radius
           const [mx, my] = toXY(sa, tr)
           return `M${sx},${sy}L${mx},${my}A${tr},${tr} 0 0,1 ${tx},${ty}`
         })
         .attr('fill', 'none')
-        .attr('stroke', '#ddd')
+        .attr('stroke', linkColor)
         .attr('stroke-width', 1.5)
 
-      // Leaf labels
       const labelG = g.selectAll('.label')
         .data(root.leaves())
         .join('g')
@@ -106,13 +107,12 @@ export function TreeCanvas() {
         .style('font-size', '10px')
         .style('font-family', 'var(--font-sans)')
         .style('font-weight', '500')
-        .style('fill', '#374151')
+        .style('fill', textColor)
         .text((d: any) => {
           const name = d.data.name.replace(/[()]/g, '')
           return name.length > 25 ? name.slice(0, 23) + '\u2026' : name
         })
 
-      // Leaf dots with clade colors
       g.selectAll('.color-arc')
         .data(root.leaves())
         .join('circle')
@@ -123,10 +123,9 @@ export function TreeCanvas() {
           const idx = leafIndexMap.get(d.data.id)
           return idx !== undefined ? getLeafColor(idx, palette) : '#fda4af'
         })
-        .attr('stroke', '#fff')
+        .attr('stroke', nodeStroke)
         .attr('stroke-width', 1.5)
 
-      // Node circles for internal nodes
       g.selectAll('.node-circle')
         .data(root.descendants().filter(d => !!d.children))
         .join('circle')
@@ -134,13 +133,12 @@ export function TreeCanvas() {
         .attr('cy', (d: any) => (d.y as number) * Math.sin((d.x as number) - Math.PI / 2))
         .attr('r', 2.5)
         .attr('fill', '#f43f5e')
-        .attr('stroke', '#fff')
+        .attr('stroke', nodeStroke)
         .attr('stroke-width', 1)
         .style('cursor', 'pointer')
         .on('click', (_event: any, d: any) => selectNode(d.data))
 
     } else {
-      // Rectangular layout — left to right, depth increases rightward
       const cluster = d3.cluster<TreeNode>()
         .size([height - 60, width - 180])
       cluster(root)
@@ -158,8 +156,6 @@ export function TreeCanvas() {
       const leafIndexMap = new Map<string, number>()
       allLeaves.forEach((leaf, i) => leafIndexMap.set(leaf.data.id, i))
 
-      // Rectangular links — right-angle elbow paths
-      // d3.cluster: x = spread (vertical), y = depth (horizontal)
       g.selectAll('.link')
         .data(root.links())
         .join('path')
@@ -172,10 +168,9 @@ export function TreeCanvas() {
           return `M${sx},${sy}H${tx}V${ty}`
         })
         .attr('fill', 'none')
-        .attr('stroke', '#ddd')
+        .attr('stroke', linkColor)
         .attr('stroke-width', 1.5)
 
-      // Nodes
       const node = g.selectAll('.node')
         .data(root.descendants())
         .join('g')
@@ -192,7 +187,7 @@ export function TreeCanvas() {
           }
           return '#f43f5e'
         })
-        .attr('stroke', '#fff')
+        .attr('stroke', nodeStroke)
         .attr('stroke-width', 1.5)
         .on('click', (_event: any, d: any) => selectNode(d.data))
         .on('mouseenter', (_event: any, d: any) => {
@@ -203,7 +198,6 @@ export function TreeCanvas() {
         })
         .on('mouseleave', () => setHovered(null))
 
-      // Leaf labels
       node.filter((d: any) => !d.children)
         .append('text')
         .attr('dx', 10)
@@ -212,13 +206,12 @@ export function TreeCanvas() {
         .style('font-size', '11px')
         .style('font-family', 'var(--font-sans)')
         .style('font-weight', '500')
-        .style('fill', '#374151')
+        .style('fill', textColor)
         .text((d: any) => {
           const name = d.data.name.replace(/[()]/g, '')
           return name.length > 25 ? name.slice(0, 23) + '\u2026' : name
         })
 
-      // Internal node labels (merge distance)
       node.filter((d: any) => d.children && (d.data as any).mergeDistance !== undefined)
         .append('text')
         .attr('dx', -6)
@@ -226,11 +219,11 @@ export function TreeCanvas() {
         .attr('text-anchor', 'end')
         .style('font-size', '8px')
         .style('font-family', 'var(--font-mono)')
-        .style('fill', '#9ca3af')
+        .style('fill', mutedColor)
         .text((d: any) => (d.data as any).mergeDistance?.toFixed(3) ?? '')
     }
 
-  }, [treeData, layoutType, selectNode, setHovered, palette])
+  }, [treeData, layoutType, selectNode, setHovered, palette, theme])
 
   useEffect(() => { draw() }, [draw])
 

@@ -13,7 +13,7 @@ export function NodeInspectionPanel() {
   if (!showNodePanel) return null
   if (!selectedNode) {
     return (
-      <div className="text-xs text-gray-400 italic p-3 border border-dashed border-blush-200 rounded-xl bg-blush-50/30 text-center">
+      <div className="text-xs text-text-muted italic p-3 border border-dashed border-border rounded-xl bg-surface text-center">
         Click a node on the tree to inspect its details
       </div>
     )
@@ -23,36 +23,36 @@ export function NodeInspectionPanel() {
   const isLeaf = leaves.length === 1
 
   return (
-    <div className="space-y-2 p-3 border border-blush-100 rounded-xl bg-blush-50/30">
+    <div className="space-y-2 p-3 border border-border rounded-xl bg-blush-50/30 dark:bg-blush-900/10">
       <div className="flex items-center justify-between">
-        <span className="text-xs font-semibold text-blush-600">Node Inspector</span>
-        <button onClick={() => selectNode(null)} className="text-gray-400 hover:text-blush-600 transition-colors text-sm">✕</button>
+        <span className="text-xs font-semibold text-blush-600 dark:text-blush-400">Node Inspector</span>
+        <button onClick={() => selectNode(null)} className="text-text-muted hover:text-blush-600 dark:hover:text-blush-400 transition-colors text-sm">✕</button>
       </div>
       <div className="space-y-1.5 text-xs">
         <div>
-          <span className="text-gray-500">Label: </span>
-          <span className="font-mono text-gray-800 font-medium">{selectedNode.name.replace(/[()]/g, '')}</span>
+          <span className="text-text-muted">Label: </span>
+          <span className="font-mono text-text-primary font-medium">{selectedNode.name.replace(/[()]/g, '')}</span>
         </div>
         {selectedNode.mergeStep !== undefined && (
           <div>
-            <span className="text-gray-500">Merge Step: </span>
-            <span className="text-blush-600 font-bold">#{selectedNode.mergeStep}</span>
+            <span className="text-text-muted">Merge Step: </span>
+            <span className="text-blush-600 dark:text-blush-400 font-bold">#{selectedNode.mergeStep}</span>
           </div>
         )}
         {selectedNode.mergeDistance !== undefined && (
           <div>
-            <span className="text-gray-500">Distance: </span>
-            <span className="text-blush-600 font-bold font-mono">{selectedNode.mergeDistance.toFixed(4)}</span>
+            <span className="text-text-muted">Distance: </span>
+            <span className="text-blush-600 dark:text-blush-400 font-bold font-mono">{selectedNode.mergeDistance.toFixed(4)}</span>
           </div>
         )}
         <div>
-          <span className="text-gray-500">Type: </span>
-          <span className={isLeaf ? 'text-blush-500' : 'text-gray-800'}>{isLeaf ? 'Leaf (taxon)' : 'Internal (clade)'}</span>
+          <span className="text-text-muted">Type: </span>
+          <span className={isLeaf ? 'text-blush-500 dark:text-blush-400' : 'text-text-primary'}>{isLeaf ? 'Leaf (taxon)' : 'Internal (clade)'}</span>
         </div>
         {!isLeaf && (
           <div>
-            <span className="text-gray-500">Contains: </span>
-            <span className="text-gray-700">{leaves.join(', ')}</span>
+            <span className="text-text-muted">Contains: </span>
+            <span className="text-text-secondary">{leaves.join(', ')}</span>
           </div>
         )}
       </div>

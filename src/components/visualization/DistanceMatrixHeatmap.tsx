@@ -18,14 +18,14 @@ export function DistanceMatrixHeatmap() {
 
   return (
     <div className="space-y-2">
-      <label className="text-xs font-semibold text-blush-600">Distance Matrix</label>
-      <div className="overflow-x-auto rounded-xl border border-blush-100">
+      <label className="text-xs font-semibold text-blush-600 dark:text-blush-400">Distance Matrix</label>
+      <div className="overflow-x-auto rounded-xl border border-border">
         <table className="text-[10px] font-mono border-collapse w-full">
           <thead>
             <tr>
-              <th className="p-1.5 bg-blush-50" />
+              <th className="p-1.5 bg-surface" />
               {displayLabels.map((l: string, i: number) => (
-                <th key={i} className="p-1.5 bg-blush-50 font-medium text-blush-600 max-w-12 truncate" title={l}>
+                <th key={i} className="p-1.5 bg-surface font-medium text-blush-600 dark:text-blush-400 max-w-12 truncate" title={l}>
                   {l.length > 6 ? l.slice(0, 5) + '\u2026' : l}
                 </th>
               ))}
@@ -34,7 +34,7 @@ export function DistanceMatrixHeatmap() {
           <tbody>
             {displayMatrix.map((row: number[], i: number) => (
               <tr key={i}>
-                <td className="p-1.5 font-medium text-blush-600 bg-blush-50 max-w-12 truncate text-right" title={displayLabels[i]}>
+                <td className="p-1.5 font-medium text-blush-600 dark:text-blush-400 bg-surface max-w-12 truncate text-right" title={displayLabels[i]}>
                   {displayLabels[i].length > 6 ? displayLabels[i].slice(0, 5) + '\u2026' : displayLabels[i]}
                 </td>
                 {row.map((val: number, j: number) => {
@@ -42,10 +42,10 @@ export function DistanceMatrixHeatmap() {
                   return (
                     <td
                       key={j}
-                      className="p-1 text-center min-w-[1.8rem] border-l border-blush-50"
+                      className="p-1 text-center min-w-[1.8rem] border-l border-border"
                       style={{
                         backgroundColor: `rgba(253, 164, 175, ${intensity * 0.8 + 0.05})`,
-                        color: intensity > 0.6 ? '#9f1239' : '#6b7280',
+                        color: intensity > 0.6 ? '#9f1239' : 'var(--color-text-secondary)',
                       }}
                     >
                       {val.toFixed(2)}

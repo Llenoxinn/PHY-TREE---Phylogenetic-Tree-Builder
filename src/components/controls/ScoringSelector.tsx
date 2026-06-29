@@ -6,24 +6,19 @@ export function ScoringSelector() {
   const { matrixType, gapPenalty, setMatrixType, setGapPenalty } = useAlignmentStore()
 
   return (
-    <div className="space-y-2">
-      <div className="space-y-1">
-        <label className="text-xs font-semibold text-blush-600">Scoring Matrix</label>
-        <select
-          value={matrixType}
-          onChange={(e) => setMatrixType(e.target.value as ScoringMatrixType)}
-          className="w-full text-xs px-3 py-2 border border-blush-100 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blush-300"
-        >
-          {Object.entries(SCORING_MATRICES).map(([key, val]) => (
-            <option key={key} value={key}>{val.name}</option>
-          ))}
-        </select>
-      </div>
-      <div className="space-y-1">
-        <div className="flex justify-between text-xs">
-          <label className="font-semibold text-blush-600">Gap Penalty</label>
-          <span className="text-blush-500 font-mono font-bold">{gapPenalty}</span>
-        </div>
+    <div className="space-y-1.5">
+      <label className="text-[10px] font-semibold text-text-muted uppercase tracking-widest">Scoring</label>
+      <select
+        value={matrixType}
+        onChange={(e) => setMatrixType(e.target.value as ScoringMatrixType)}
+        className="w-full text-[11px] px-2 py-1.5 border border-border rounded bg-surface text-text-primary focus:outline-none focus:border-blush-400"
+      >
+        {Object.entries(SCORING_MATRICES).map(([key, val]) => (
+          <option key={key} value={key}>{val.name}</option>
+        ))}
+      </select>
+      <div className="flex items-center gap-2">
+        <span className="text-[10px] text-text-muted">Gap</span>
         <input
           type="range"
           min="-20"
@@ -31,8 +26,9 @@ export function ScoringSelector() {
           step={1}
           value={gapPenalty}
           onChange={(e) => setGapPenalty(Number(e.target.value))}
-          className="w-full h-1.5 bg-blush-100 rounded-full appearance-none cursor-pointer accent-blush-500"
+          className="flex-1 h-1 bg-border rounded appearance-none cursor-pointer accent-blush-500"
         />
+        <span className="text-[10px] text-blush-500 dark:text-blush-400 font-mono w-6 text-right">{gapPenalty}</span>
       </div>
     </div>
   )
