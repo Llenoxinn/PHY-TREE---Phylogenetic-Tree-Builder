@@ -58,16 +58,16 @@ export function StepReplayControls() {
       </div>
 
       <div className="flex items-center justify-center gap-1.5">
-        <button onClick={() => goToStep(0)} className="p-2 rounded-lg hover:bg-blush-50 text-gray-500 hover:text-blush-600 transition-colors" title="First step">⏮</button>
-        <button onClick={prevStep} className="p-2 rounded-lg hover:bg-blush-50 text-gray-500 hover:text-blush-600 transition-colors" title="Previous step">◀</button>
+        <button onClick={() => goToStep(0)} className="p-2 rounded-lg hover:bg-blush-50 text-gray-500 hover:text-blush-600 transition-colors" title="First step">|&lt;&lt;</button>
+        <button onClick={prevStep} className="p-2 rounded-lg hover:bg-blush-50 text-gray-500 hover:text-blush-600 transition-colors" title="Previous step">&lt;</button>
         <button
           onClick={() => isPlaying ? pause() : play()}
           className="px-5 py-2 rounded-xl bg-blush-500 text-white text-xs font-bold hover:bg-blush-600 shadow-sm shadow-blush-200 hover:shadow-md transition-all active:scale-95"
         >
-          {isPlaying ? '⏸ Pause' : '▶ Play'}
+          {isPlaying ? 'Pause' : 'Play'}
         </button>
-        <button onClick={nextStep} className="p-2 rounded-lg hover:bg-blush-50 text-gray-500 hover:text-blush-600 transition-colors" title="Next step">▶</button>
-        <button onClick={() => goToStep(steps.length - 1)} className="p-2 rounded-lg hover:bg-blush-50 text-gray-500 hover:text-blush-600 transition-colors" title="Last step">⏩</button>
+        <button onClick={nextStep} className="p-2 rounded-lg hover:bg-blush-50 text-gray-500 hover:text-blush-600 transition-colors" title="Next step">&gt;</button>
+        <button onClick={() => goToStep(steps.length - 1)} className="p-2 rounded-lg hover:bg-blush-50 text-gray-500 hover:text-blush-600 transition-colors" title="Last step">&gt;&gt;|</button>
         <select
           value={playSpeed}
           onChange={(e) => setPlaySpeed(Number(e.target.value))}

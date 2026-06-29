@@ -1,24 +1,20 @@
 import { useSequenceStore } from '../../store/sequence-store'
 import { PRESETS, generateRandomPreset } from '../../lib/utils/presets'
-
-const STEPS = [
-  { num: '1', title: 'Input Sequences', desc: 'Paste DNA sequences in FASTA format, or one per line. Each sequence gets a label you can edit.' },
-  { num: '2', title: 'Choose Method', desc: 'Pick UPGMA (simpler, assumes clock-like evolution) or Neighbor-Joining (more accurate for real data).' },
-  { num: '3', title: 'Build Tree', desc: 'Click Build & Re-Run. The tree renders instantly with animated branch drawing.' },
-  { num: '4', title: 'Replay & Explore', desc: 'Step through the algorithm one merge at a time. Click nodes to inspect. Zoom and pan.' },
-]
+import { runFullPipeline } from '../../App'
 
 export function WelcomeHero() {
   const { setRawInput, sequences } = useSequenceStore()
 
   const loadPreset = (fasta: string) => {
     setRawInput(fasta)
+    setTimeout(() => runFullPipeline(), 50)
   }
 
   const handleRandom = () => {
     const count = 4 + Math.floor(Math.random() * 4)
     const fasta = generateRandomPreset(count, 30 + Math.floor(Math.random() * 40))
     setRawInput(fasta)
+    setTimeout(() => runFullPipeline(), 50)
   }
 
   if (sequences.length > 0) return null
@@ -70,10 +66,17 @@ export function WelcomeHero() {
             onClick={handleRandom}
             className="w-full px-4 py-3 rounded-xl border border-dashed border-blush-200 text-blush-500 hover:bg-blush-50 hover:border-blush-300 text-sm font-medium transition-all"
           >
-            🎲 Generate Random Sequences
+            Generate Random Sequences
           </button>
         </div>
       </div>
     </div>
   )
 }
+
+const STEPS = [
+  { num: '1', title: 'Input Sequences', desc: 'Paste DNA sequences in FASTA format, or one per line. Each sequence gets a label you can edit.' },
+  { num: '2', title: 'Choose Method', desc: 'Pick UPGMA (simpler, assumes clock-like evolution) or Neighbor-Joining (more accurate for real data).' },
+  { num: '3', title: 'Build Tree', desc: 'Click Build & Re-Run. The tree renders instantly with animated branch drawing.' },
+  { num: '4', title: 'Replay & Explore', desc: 'Step through the algorithm one merge at a time. Click nodes to inspect. Zoom and pan.' },
+]

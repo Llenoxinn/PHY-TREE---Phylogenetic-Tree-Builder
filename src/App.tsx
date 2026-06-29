@@ -17,44 +17,58 @@ import { useSequenceStore } from './store/sequence-store'
 import { useAlignmentStore } from './store/alignment-store'
 import { useTreeStore } from './store/tree-store'
 import { useUIStore } from './store/ui-store'
+import { SCORING_MATRICES } from './lib/algorithms/scoring-matrices'
+import { computeDistanceMatrix, buildNxNMatrix } from './lib/algorithms/needleman-wunsch'
+
+export function runFullPipeline() {
+  const seqs = useSequenceStore.getState().sequences
+  if (seqs.length < 2) return
+
+  const { matrixType, gapPenalty } = useAlignmentStore.getState()
+  const scoring = SCORING_MATRICES[matrixType]
+  const seqStrings = seqs.map(s => s.raw)
+
+  const pairwise = computeDistanceMatrix(seqStrings, scoring.matrix, gapPenalty)
+  const distanceMatrix = buildNxNMatrix(seqStrings, pairwise)
+  useAlignmentStore.setState({ pairwiseAlignments: pairwise, distanceMatrix })
+
+  const labels = seqs.map(s => s.label)
+  useTreeStore.getState().buildTree(labels, distanceMatrix)
+}
 
 export default function App() {
   const sequences = useSequenceStore(s => s.sequences)
   const rawInput = useSequenceStore(s => s.rawInput)
   const distanceMatrix = useAlignmentStore(s => s.distanceMatrix)
   const isComputing = useAlignmentStore(s => s.isComputing)
-  const compute = useAlignmentStore(s => s.compute)
-  const buildTree = useTreeStore(s => s.buildTree)
   const theme = useUIStore(s => s.theme)
   const { showHeatmap, showExplainer, showNodePanel } = useUIStore()
   const [activeTab, setActiveTab] = useState<'input' | 'howto'>('input')
 
-  useEffect(() => {
-    if (sequences.length >= 2) {
-      compute(sequences.map(s => s.raw))
-    }
-  }, [rawInput])
-
-  useEffect(() => {
-    if (distanceMatrix.length > 0) {
-      buildTree(sequences.map(s => s.label), distanceMatrix)
-    }
-  }, [distanceMatrix])
+  const hasData = sequences.length > 0
+  const hasTree = distanceMatrix.length > 0
 
   useEffect(() => {
     if (theme === 'dark') document.documentElement.classList.add('dark')
     else document.documentElement.classList.remove('dark')
   }, [theme])
 
-  const hasData = sequences.length > 0
-  const hasTree = distanceMatrix.length > 0
+  useEffect(() => {
+    if (sequences.length >= 2) {
+      const timer = setTimeout(() => runFullPipeline(), 30)
+      return () => clearTimeout(timer)
+    }
+  }, [rawInput])
+
+  const handleBuild = () => {
+    runFullPipeline()
+  }
 
   return (
     <div className={`h-screen flex flex-col ${theme === 'dark' ? 'bg-gray-950 text-white' : 'bg-blush-50/30 text-gray-900'}`}>
       <Header />
 
       <div className="flex-1 flex overflow-hidden">
-        {/* Left Sidebar */}
         <aside className={`w-80 flex-shrink-0 border-r flex flex-col ${theme === 'dark' ? 'border-gray-800 bg-gray-900' : 'border-blush-100 bg-white'}`}>
           <div className="flex border-b border-blush-100">
             <button
@@ -90,7 +104,6 @@ export default function App() {
           </div>
         </aside>
 
-        {/* Center - Tree Visualization */}
         <main className="flex-1 flex flex-col overflow-hidden relative bg-white">
           <WelcomeHero />
 
@@ -113,7 +126,7 @@ export default function App() {
               <StepReplayControls />
               <div className="flex items-center gap-2 mt-2">
                 <button
-                  onClick={() => compute(sequences.map(s => s.raw))}
+                  onClick={handleBuild}
                   disabled={sequences.length < 2}
                   className={`px-4 py-2 text-xs font-semibold rounded-lg transition-all shadow-sm ${
                     sequences.length < 2
@@ -121,11 +134,11 @@ export default function App() {
                       : 'bg-blush-500 text-white hover:bg-blush-600 hover:shadow-md active:scale-95'
                   }`}
                 >
-                  {hasTree ? '↻ Re-Run Analysis' : '▶ Build Tree'}
+                  {hasTree ? 'Re-Run Analysis' : 'Build Tree'}
                 </button>
                 {hasTree && (
                   <span className="text-[11px] text-gray-400">
-                    {sequences.length} taxa · {distanceMatrix.length > 0 ? 'Tree built' : 'Matrix ready'}
+                    {sequences.length} taxa loaded
                   </span>
                 )}
               </div>
@@ -133,7 +146,6 @@ export default function App() {
           )}
         </main>
 
-        {/* Right Sidebar */}
         {(showHeatmap || showExplainer || showNodePanel) && hasData && (
           <aside className={`w-72 flex-shrink-0 border-l overflow-y-auto ${theme === 'dark' ? 'border-gray-800 bg-gray-900' : 'border-blush-100 bg-white'}`}>
             <div className="p-3 space-y-4">
@@ -206,8 +218,8 @@ function HowItWorksPanel() {
         <h3 className="font-bold text-blush-600 text-sm mb-2">Keyboard Shortcuts</h3>
         <div className="grid grid-cols-2 gap-1 text-gray-500">
           <span><kbd className="bg-gray-100 px-1.5 py-0.5 rounded text-[10px]">Space</kbd> Play/Pause</span>
-          <span><kbd className="bg-gray-100 px-1.5 py-0.5 rounded text-[10px]">→</kbd> Next step</span>
-          <span><kbd className="bg-gray-100 px-1.5 py-0.5 rounded text-[10px]">←</kbd> Previous step</span>
+          <span><kbd className="bg-gray-100 px-1.5 py-0.5 rounded text-[10px]">&rarr;</kbd> Next step</span>
+          <span><kbd className="bg-gray-100 px-1.5 py-0.5 rounded text-[10px]">&larr;</kbd> Previous step</span>
           <span><kbd className="bg-gray-100 px-1.5 py-0.5 rounded text-[10px]">Home</kbd> First step</span>
         </div>
       </div>

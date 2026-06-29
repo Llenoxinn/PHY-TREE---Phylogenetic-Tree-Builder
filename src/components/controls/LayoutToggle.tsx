@@ -16,7 +16,7 @@ export function LayoutToggle() {
               layoutType === t ? 'bg-white shadow-sm text-blush-600 shadow-blush-100' : 'text-gray-500 hover:text-gray-700'
             }`}
           >
-            {t === 'rectangular' ? '◻ Rectangular' : '◎ Circular'}
+            {t === 'rectangular' ? 'Rectangular' : 'Circular'}
           </button>
         ))}
       </div>

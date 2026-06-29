@@ -37,63 +37,63 @@ export function Header() {
   }
 
   return (
-    <header className="h-14 bg-white border-b border-blush-200 flex items-center px-5 gap-4 flex-shrink-0">
+    <header className="h-14 bg-surface border-b border-border flex items-center px-5 gap-4 flex-shrink-0">
       <div className="flex items-center gap-2.5">
         <div className="w-8 h-8 bg-blush-500 rounded-lg flex items-center justify-center shadow-sm">
           <span className="text-white font-bold text-sm">P</span>
         </div>
         <div>
-          <h1 className="text-base font-bold text-gray-900 leading-tight">PhyTree</h1>
+          <h1 className="text-base font-bold text-text-primary leading-tight">PhyTree</h1>
           <p className="text-[10px] text-blush-400 font-medium leading-tight">Phylogenetic Tree Builder</p>
         </div>
       </div>
 
-      <div className="h-6 w-px bg-blush-200 mx-2" />
+      <div className="h-6 w-px bg-border mx-2" />
 
       <nav className="flex items-center gap-1 text-xs">
-        <span className="text-gray-400 mr-1">Export:</span>
-        <button onClick={handleSVG} className="px-2 py-1 rounded hover:bg-blush-50 text-gray-600 hover:text-blush-600 transition-colors">SVG</button>
-        <button onClick={handlePNG} className="px-2 py-1 rounded hover:bg-blush-50 text-gray-600 hover:text-blush-600 transition-colors">PNG</button>
-        <button onClick={handleNewick} className="px-2 py-1 rounded hover:bg-blush-50 text-gray-600 hover:text-blush-600 transition-colors" disabled={!fullTree}>Newick</button>
-        <button onClick={handleCSV} className="px-2 py-1 rounded hover:bg-blush-50 text-gray-600 hover:text-blush-600 transition-colors" disabled={distanceMatrix.length === 0}>CSV</button>
+        <span className="text-text-muted mr-1">Export:</span>
+        <button onClick={handleSVG} className="px-2 py-1 rounded hover:bg-blush-50 dark:hover:bg-surface-hover text-text-secondary hover:text-blush-600 transition-colors">SVG</button>
+        <button onClick={handlePNG} className="px-2 py-1 rounded hover:bg-blush-50 dark:hover:bg-surface-hover text-text-secondary hover:text-blush-600 transition-colors">PNG</button>
+        <button onClick={handleNewick} className="px-2 py-1 rounded hover:bg-blush-50 dark:hover:bg-surface-hover text-text-secondary hover:text-blush-600 transition-colors" disabled={!fullTree}>Newick</button>
+        <button onClick={handleCSV} className="px-2 py-1 rounded hover:bg-blush-50 dark:hover:bg-surface-hover text-text-secondary hover:text-blush-600 transition-colors" disabled={distanceMatrix.length === 0}>CSV</button>
       </nav>
 
-      <div className="h-6 w-px bg-blush-200 mx-2" />
+      <div className="h-6 w-px bg-border mx-2" />
 
       <div className="flex items-center gap-1 text-xs">
-        <span className="text-gray-400 mr-1">Palette:</span>
+        <span className="text-text-muted mr-1">Palette:</span>
         {(['default', 'colorblind', 'vibrant'] as const).map((p) => (
           <button
             key={p}
             onClick={() => setPalette(p)}
-            className={`px-2 py-1 rounded transition-colors ${palette === p ? 'bg-blush-100 text-blush-700 font-medium' : 'text-gray-500 hover:bg-blush-50'}`}
+            className={`px-2 py-1 rounded transition-colors ${palette === p ? 'bg-blush-100 dark:bg-blush-900/30 text-blush-700 dark:text-blush-400 font-medium' : 'text-text-secondary hover:bg-blush-50 dark:hover:bg-surface-hover'}`}
           >
             {p}
           </button>
         ))}
       </div>
 
-      <div className="h-6 w-px bg-blush-200 mx-2" />
+      <div className="h-6 w-px bg-border mx-2" />
 
       <div className="flex items-center gap-1 text-xs">
         <button
           onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
-          className="px-2 py-1 rounded hover:bg-blush-50 text-gray-500"
+          className="px-2 py-1 rounded hover:bg-blush-50 dark:hover:bg-surface-hover text-text-secondary"
         >
           {theme === 'light' ? '☾' : '☀'}
         </button>
       </div>
 
       <div className="ml-auto flex items-center gap-1 text-xs">
-        <label className="flex items-center gap-1 text-gray-500 hover:text-blush-600 cursor-pointer">
+        <label className="flex items-center gap-1 text-text-secondary hover:text-blush-600 cursor-pointer">
           <input type="checkbox" checked={showHeatmap} onChange={toggleHeatmap} className="w-3 h-3 accent-blush-500" />
           <span>Heatmap</span>
         </label>
-        <label className="flex items-center gap-1 text-gray-500 hover:text-blush-600 cursor-pointer">
+        <label className="flex items-center gap-1 text-text-secondary hover:text-blush-600 cursor-pointer">
           <input type="checkbox" checked={showExplainer} onChange={toggleExplainer} className="w-3 h-3 accent-blush-500" />
           <span>Explain</span>
         </label>
-        <label className="flex items-center gap-1 text-gray-500 hover:text-blush-600 cursor-pointer">
+        <label className="flex items-center gap-1 text-text-secondary hover:text-blush-600 cursor-pointer">
           <input type="checkbox" checked={showNodePanel} onChange={toggleNodePanel} className="w-3 h-3 accent-blush-500" />
           <span>Inspector</span>
         </label>

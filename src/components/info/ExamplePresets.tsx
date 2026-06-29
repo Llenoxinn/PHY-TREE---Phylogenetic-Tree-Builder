@@ -1,17 +1,20 @@
 import { useSequenceStore } from '../../store/sequence-store'
 import { PRESETS, generateRandomPreset } from '../../lib/utils/presets'
+import { runFullPipeline } from '../../App'
 
 export function ExamplePresets() {
   const { setRawInput } = useSequenceStore()
 
   const loadPreset = (fasta: string) => {
     setRawInput(fasta)
+    setTimeout(() => runFullPipeline(), 50)
   }
 
   const handleRandom = () => {
     const count = 4 + Math.floor(Math.random() * 4)
     const fasta = generateRandomPreset(count, 30 + Math.floor(Math.random() * 40))
     setRawInput(fasta)
+    setTimeout(() => runFullPipeline(), 50)
   }
 
   return (
@@ -32,7 +35,7 @@ export function ExamplePresets() {
           onClick={handleRandom}
           className="w-full text-left px-3 py-2 rounded-xl border border-dashed border-blush-200 text-blush-500 hover:bg-blush-50 hover:border-blush-300 text-xs font-medium transition-all"
         >
-          🎲 Generate Random
+          Generate Random
         </button>
       </div>
     </div>
