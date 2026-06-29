@@ -48,36 +48,36 @@ export function Header({ onToggleSidebar, onToggleRightPanel, hasData }: HeaderP
   }
 
   return (
-    <header className="h-10 bg-surface border-b border-border flex items-center px-2 md:px-3 gap-2 md:gap-3 flex-shrink-0">
-      {/* Mobile menu button */}
+    <header className="h-10 bg-surface border-b border-border flex items-center px-2 md:px-3 gap-1.5 md:gap-2 flex-shrink-0 overflow-x-auto">
+      {/* Mobile menu */}
       <button
         onClick={onToggleSidebar}
-        className="md:hidden p-1.5 text-text-secondary hover:text-text-primary hover:bg-surface-hover transition-colors"
+        className="md:hidden p-1.5 text-text-secondary hover:text-text-primary hover:bg-surface-hover transition-colors flex-shrink-0"
       >
         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
         </svg>
       </button>
 
-      <div className="flex items-center gap-1.5">
+      {/* Logo */}
+      <div className="flex items-center gap-1.5 flex-shrink-0">
         <PhyTreeLogo size={20} />
         <span className="text-sm font-semibold text-text-primary tracking-tight hidden sm:block">PhyTree</span>
       </div>
 
-      <div className="h-4 w-px bg-border hidden sm:block" />
+      <div className="h-4 w-px bg-border flex-shrink-0" />
 
+      {/* New */}
       <button
         onClick={handleNew}
-        className="px-1.5 py-0.5 text-[11px] text-text-secondary hover:text-text-primary hover:bg-surface-hover transition-colors"
+        className="px-1.5 py-0.5 text-[11px] text-text-secondary hover:text-text-primary hover:bg-surface-hover transition-colors flex-shrink-0"
       >
         New
       </button>
 
-      <div className="h-4 w-px bg-border" />
-
-      {/* Export - hidden on very small screens */}
-      <div className="hidden sm:flex items-center gap-0.5 text-[11px]">
-        <span className="text-text-muted mr-1">Export</span>
+      {/* Export */}
+      <div className="hidden sm:flex items-center gap-0.5 text-[11px] flex-shrink-0">
+        <div className="h-4 w-px bg-border mr-1" />
         {[
           { label: 'SVG', fn: handleSVG, enabled: true },
           { label: 'PNG', fn: handlePNG, enabled: true },
@@ -95,54 +95,57 @@ export function Header({ onToggleSidebar, onToggleRightPanel, hasData }: HeaderP
         ))}
       </div>
 
-      {/* Palette - hidden on small screens */}
-      <div className="hidden lg:flex items-center gap-0.5 text-[11px]">
-        <div className="h-4 w-px bg-border" />
-        <span className="text-text-muted mr-1">Palette</span>
-        {(['default', 'colorblind', 'vibrant'] as const).map(p => (
-          <button
-            key={p}
-            onClick={() => setPalette(p)}
-            className={`px-1.5 py-0.5 transition-colors ${palette === p ? 'text-blush-600 dark:text-blush-400 font-medium' : 'text-text-secondary hover:text-text-primary hover:bg-surface-hover'}`}
-          >
-            {p}
-          </button>
-        ))}
-      </div>
+      <div className="flex-1" />
 
-      <div className="h-4 w-px bg-border hidden sm:block" />
-
-      <button
-        onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
-        className="px-1.5 py-0.5 text-text-secondary hover:text-text-primary hover:bg-surface-hover transition-colors text-[11px]"
-      >
-        {theme === 'light' ? 'Dark' : 'Light'}
-      </button>
-
-      <div className="ml-auto flex items-center gap-1.5 md:gap-2 text-[11px]">
-        {/* Panel toggles */}
-        <div className="hidden md:flex items-center gap-2">
-          {hasData && (
+      {/* Right side controls */}
+      <div className="flex items-center gap-1 text-[11px] flex-shrink-0">
+        {/* Palette - hidden on small */}
+        <div className="hidden lg:flex items-center gap-0.5">
+          {(['default', 'colorblind', 'vibrant'] as const).map(p => (
             <button
-              onClick={toggleTreeSettings}
-              className={`px-1.5 py-0.5 text-[11px] transition-colors ${showTreeSettings ? 'text-blush-600 dark:text-blush-400 font-medium' : 'text-text-secondary hover:text-text-primary hover:bg-surface-hover'}`}
+              key={p}
+              onClick={() => setPalette(p)}
+              className={`px-1.5 py-0.5 transition-colors ${palette === p ? 'text-blush-600 dark:text-blush-400 font-medium' : 'text-text-secondary hover:text-text-primary hover:bg-surface-hover'}`}
             >
-              Style
+              {p}
             </button>
-          )}
-          {[
-            { label: 'Heatmap', checked: showHeatmap, toggle: toggleHeatmap },
-            { label: 'Explain', checked: showExplainer, toggle: toggleExplainer },
-            { label: 'Inspector', checked: showNodePanel, toggle: toggleNodePanel },
-          ].map(item => (
-            <label key={item.label} className="flex items-center gap-1 text-text-secondary hover:text-text-primary cursor-pointer select-none">
-              <input type="checkbox" checked={item.checked} onChange={item.toggle} className="w-3 h-3 accent-blush-500 rounded-sm" />
-              {item.label}
-            </label>
           ))}
+          <div className="h-4 w-px bg-border mx-0.5" />
         </div>
 
-        {/* Mobile right panel toggle */}
+        {/* Theme */}
+        <button
+          onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
+          className="px-1.5 py-0.5 text-text-secondary hover:text-text-primary hover:bg-surface-hover transition-colors"
+        >
+          {theme === 'light' ? 'Dark' : 'Light'}
+        </button>
+
+        {/* Style - only when data loaded */}
+        {hasData && (
+          <button
+            onClick={toggleTreeSettings}
+            className={`px-1.5 py-0.5 transition-colors ${showTreeSettings ? 'text-blush-600 dark:text-blush-400 font-medium bg-blush-50 dark:bg-blush-900/20' : 'text-text-secondary hover:text-text-primary hover:bg-surface-hover'}`}
+          >
+            Style
+          </button>
+        )}
+
+        <div className="h-4 w-px bg-border mx-0.5" />
+
+        {/* Panel toggles */}
+        {[
+          { label: 'Heatmap', checked: showHeatmap, toggle: toggleHeatmap },
+          { label: 'Explain', checked: showExplainer, toggle: toggleExplainer },
+          { label: 'Inspect', checked: showNodePanel, toggle: toggleNodePanel },
+        ].map(item => (
+          <label key={item.label} className="hidden md:flex items-center gap-1 text-text-secondary hover:text-text-primary cursor-pointer select-none">
+            <input type="checkbox" checked={item.checked} onChange={item.toggle} className="w-3 h-3 accent-blush-500 rounded-sm" />
+            {item.label}
+          </label>
+        ))}
+
+        {/* Mobile panel toggle */}
         {hasData && (
           <button
             onClick={onToggleRightPanel}
