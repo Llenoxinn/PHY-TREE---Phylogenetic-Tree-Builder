@@ -88,6 +88,10 @@ export default function App() {
       <Header
         onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
         onToggleRightPanel={() => setRightPanelOpen(!rightPanelOpen)}
+        onTogglePanel={(toggle, isOpen) => {
+          toggle()
+          if (!isOpen && !rightPanelOpen) setRightPanelOpen(true)
+        }}
         hasData={hasData}
       />
 
@@ -194,7 +198,7 @@ export default function App() {
             />
             <aside className={`
               fixed lg:relative inset-y-0 right-0 z-30
-              w-64 flex-shrink-0 border-l border-border bg-surface overflow-y-auto
+              w-72 lg:w-80 flex-shrink-0 border-l border-border bg-surface overflow-y-auto
               transition-transform duration-200 ease-out
             `}>
               <div className="p-2 space-y-3">

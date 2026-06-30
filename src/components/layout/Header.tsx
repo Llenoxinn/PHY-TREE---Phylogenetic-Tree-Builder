@@ -10,10 +10,11 @@ import { PhyTreeLogo } from './PhyTreeLogo'
 interface HeaderProps {
   onToggleSidebar: () => void
   onToggleRightPanel: () => void
+  onTogglePanel: (toggle: () => void, isOpen: boolean) => void
   hasData: boolean
 }
 
-export function Header({ onToggleSidebar, onToggleRightPanel, hasData }: HeaderProps) {
+export function Header({ onToggleSidebar, onToggleRightPanel, onTogglePanel, hasData }: HeaderProps) {
   const { palette, setPalette, theme, setTheme, toggleHeatmap, toggleExplainer, toggleNodePanel, showHeatmap, showExplainer, showNodePanel, showTreeSettings, toggleTreeSettings, showMSA, toggleMSA } = useUIStore()
   const { exportSVG, exportPNG } = useExport()
   const { fullTree } = useTreeStore()
@@ -140,9 +141,9 @@ export function Header({ onToggleSidebar, onToggleRightPanel, hasData }: HeaderP
           { label: 'Explain', checked: showExplainer, toggle: toggleExplainer },
           { label: 'Inspect', checked: showNodePanel, toggle: toggleNodePanel },
         ].map(item => (
-          <label key={item.label} className="hidden md:flex items-center gap-1 text-text-secondary hover:text-text-primary cursor-pointer select-none">
-            <input type="checkbox" checked={item.checked} onChange={item.toggle} className="w-3 h-3 accent-blush-500 rounded-sm" />
-            {item.label}
+          <label key={item.label} className="hidden md:flex items-center gap-1.5 text-text-secondary hover:text-text-primary cursor-pointer select-none">
+            <input type="checkbox" checked={item.checked} onChange={() => onTogglePanel(item.toggle, item.checked)} className="w-3 h-3 accent-blush-500 rounded-sm" />
+            <span className="text-[10px]">{item.label}</span>
           </label>
         ))}
 

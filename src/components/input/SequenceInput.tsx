@@ -23,13 +23,13 @@ export function SequenceInput() {
         <div className="flex items-center gap-2">
           {hasSeqs && (
             <span className="text-[10px] text-text-muted font-mono">
-              {sequences.length} seqs
+              {sequences.length} seq{sequences.length > 1 ? 's' : ''}
             </span>
           )}
           {hasSeqs && (
             <button
               onClick={() => setIsEditing(!isEditing)}
-              className="text-[10px] text-text-muted hover:text-text-primary transition-colors"
+              className="text-[10px] text-text-muted hover:text-blush-500 dark:hover:text-blush-400 transition-colors"
             >
               {isEditing ? 'Done' : 'Edit'}
             </button>

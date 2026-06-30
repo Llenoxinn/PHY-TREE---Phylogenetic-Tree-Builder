@@ -44,8 +44,13 @@ export function MSAViewer() {
   return (
     <div className="space-y-1.5">
       <label className="text-[10px] font-semibold text-text-muted uppercase tracking-widest">Multiple Sequence Alignment</label>
-      <div className="border border-border bg-surface-alt overflow-x-auto max-h-64">
+      <div className="border border-border bg-surface-alt overflow-x-auto max-h-72">
         <div className="font-mono text-[9px] leading-relaxed whitespace-nowrap p-1.5" style={{ letterSpacing: '0.04em' }}>
+          {cols > 60 && (
+            <div className="text-[7px] text-text-muted text-center pb-0.5 border-b border-border mb-0.5 sticky top-0 bg-surface-alt z-10">
+              Scroll right for more columns ({cols} total)
+            </div>
+          )}
           <div className="flex items-center gap-1 mb-0.5 pb-0.5 border-b border-border sticky top-0 bg-surface-alt z-10">
             <span className="w-14 flex-shrink-0 text-text-muted">Pos</span>
             {Array.from({ length: cols }, (_, i) => (

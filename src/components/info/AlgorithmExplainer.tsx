@@ -81,22 +81,11 @@ export function AlgorithmExplainer() {
 
       {steps.length > 0 && (
         <div className="border-t border-border pt-2">
-          <div className="flex items-center justify-between mb-1">
-            <span className="text-[10px] text-text-muted" style={{ fontFamily: 'var(--font-sans)' }}>
-              Progress
-            </span>
-            <span className="text-[10px] text-text-muted font-mono">
-              {currentStep}/{steps.length - 1}
-            </span>
-          </div>
-          <div className="relative h-1 bg-border rounded-full overflow-hidden mb-2">
-            <div
-              className="absolute h-full bg-blush-500 rounded-full transition-all duration-200"
-              style={{ width: `${steps.length > 1 ? (currentStep / (steps.length - 1)) * 100 : 0}%` }}
-            />
-          </div>
           <p className="text-xs text-text-secondary leading-relaxed" style={{ fontFamily: 'var(--font-sans)' }}>
             {steps[currentStep]?.description}
+          </p>
+          <p className="text-[10px] text-text-muted mt-1 font-mono">
+            Step {currentStep}/{steps.length - 1}
           </p>
         </div>
       )}
