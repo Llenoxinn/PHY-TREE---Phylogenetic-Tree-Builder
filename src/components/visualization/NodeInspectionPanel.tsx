@@ -16,7 +16,7 @@ function getLeafIndices(node: { children?: any[]; originalIndex?: number }): num
 }
 
 export function NodeInspectionPanel() {
-  const { selectedNode, selectNode } = useTreeStore()
+  const { selectedNode, selectNode, steps } = useTreeStore()
   const { showNodePanel } = useUIStore()
   const { pairwiseAlignments } = useAlignmentStore()
   const { sequences } = useSequenceStore()
@@ -44,6 +44,10 @@ export function NodeInspectionPanel() {
       )
     : null
 
+  const stepDesc = selectedNode.mergeStep !== undefined
+    ? steps[selectedNode.mergeStep]?.description
+    : null
+
   return (
     <div className="space-y-2 border border-border p-2">
       <div className="flex items-center justify-between">
@@ -65,6 +69,12 @@ export function NodeInspectionPanel() {
             <span className="text-text-secondary">{leaves.join(', ')}</span>
           </div>
         )}
+        {stepDesc && !isLeaf && (
+          <div>
+            <span className="text-text-muted">Event: </span>
+            <span className="text-text-secondary">{stepDesc}</span>
+          </div>
+        )}
 
         {pair && (
           <div className="pt-1.5 border-t border-border mt-1.5 space-y-1">
@@ -80,10 +90,10 @@ export function NodeInspectionPanel() {
               </div>
             </div>
             <div className="flex gap-2 text-[9px] text-text-muted">
-              <span>Score: {pair.score}</span>
+              <span>Score: <span className="text-text-primary">{pair.score}</span></span>
               <span>Identity: {(
                 pair.alignedA.split('').filter((ch, idx) => ch === pair.alignedB[idx] && ch !== '-').length /
-                pair.alignedA.split('').filter(ch => ch !== '-').length * 100
+                Math.max(1, pair.alignedA.split('').filter(ch => ch !== '-').length) * 100
               ).toFixed(1)}%</span>
             </div>
           </div>

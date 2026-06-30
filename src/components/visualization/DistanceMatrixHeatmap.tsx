@@ -14,6 +14,7 @@ export function DistanceMatrixHeatmap() {
   if (!showHeatmap || distanceMatrix.length === 0) return null
 
   const displayMatrix = steps[currentStep]?.matrixSnapshot || distanceMatrix
+  const isFullMatrix = displayMatrix.length === distanceMatrix.length
   const displayLabels = labels.length === displayMatrix.length ? labels : displayMatrix.map((_: any, i: number) => `S${i + 1}`)
   const maxVal = Math.max(1, ...displayMatrix.flat())
 
@@ -48,7 +49,7 @@ export function DistanceMatrixHeatmap() {
                   const textColor = isDark
                     ? intensity > 0.5 ? '#fda4af' : '#a9b1d6'
                     : intensity > 0.6 ? '#9f1239' : '#495057'
-                  const isClickable = j > i
+                  const isClickable = j > i && isFullMatrix
                   return (
                     <td
                       key={j}

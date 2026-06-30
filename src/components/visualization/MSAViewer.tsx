@@ -14,11 +14,17 @@ export function MSAViewer() {
 
   if (!showMSA || !fullTree || sequences.length < 2) return null
 
-  const scoring = SCORING_MATRICES[matrixType]
-  const rawSeqs = sequences.map(s => s.raw)
+  const rawSeqs = useMemo(() => sequences.map(s => s.raw), [sequences])
+  const scoring = useMemo(() => SCORING_MATRICES[matrixType], [matrixType])
 
   const msa = useMemo(
-    () => computeMSA(fullTree, rawSeqs, scoring.matrix, gapPenalty),
+    () => {
+      try {
+        return computeMSA(fullTree, rawSeqs, scoring.matrix, gapPenalty)
+      } catch {
+        return null
+      }
+    },
     [fullTree, rawSeqs, scoring.matrix, gapPenalty],
   )
 

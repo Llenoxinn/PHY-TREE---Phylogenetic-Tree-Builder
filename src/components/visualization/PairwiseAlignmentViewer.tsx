@@ -24,7 +24,8 @@ export function PairwiseAlignmentViewer() {
     gap: ch === '-' || pair.alignedB[idx] === '-',
   }))
 
-  const identity = cols.filter(c => c.match && !c.gap).length / cols.filter(c => !c.gap).length * 100
+  const identityGap = cols.filter(c => !c.gap).length
+  const identity = identityGap > 0 ? cols.filter(c => c.match && !c.gap).length / identityGap * 100 : 0
 
   return (
     <div className="space-y-1.5">
