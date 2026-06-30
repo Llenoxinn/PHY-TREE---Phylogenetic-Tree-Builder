@@ -4,15 +4,21 @@ import { useTreeStore } from '../../store/tree-store'
 import { useSequenceStore } from '../../store/sequence-store'
 import { useUIStore } from '../../store/ui-store'
 import { getLeafColor, type PaletteName } from '../../lib/utils/colors'
-import type { TreeNode } from '../../types'
+import type { TreeNode, MergeStep } from '../../types'
 
-export function TreeCanvas() {
+interface TreeCanvasProps {
+  stepsOverride?: MergeStep[]
+  methodLabel?: string
+}
+
+export function TreeCanvas({ stepsOverride, methodLabel }: TreeCanvasProps) {
   const svgRef = useRef<SVGSVGElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
-  const { steps, currentStep, layoutType, selectNode } = useTreeStore()
+  const { steps: storeSteps, currentStep, layoutType, selectNode } = useTreeStore()
   const { setHovered, hoveredIndex } = useSequenceStore()
   const { palette, theme, treeSettings } = useUIStore()
 
+  const steps = stepsOverride ?? storeSteps
   const treeData = steps[currentStep]?.treeState ?? null
 
   const draw = useCallback(() => {
@@ -69,7 +75,12 @@ export function TreeCanvas() {
   }, [draw])
 
   return (
-    <div ref={containerRef} className="w-full h-full min-h-[300px]">
+    <div ref={containerRef} className="w-full h-full min-h-[300px] relative">
+      {methodLabel && (
+        <div className="absolute top-2 left-2 z-10 px-2 py-0.5 bg-surface/90 border border-border text-[10px] font-semibold uppercase tracking-wider text-text-secondary">
+          {methodLabel}
+        </div>
+      )}
       <svg ref={svgRef} className="w-full h-full" />
     </div>
   )
@@ -237,13 +248,21 @@ function drawRectangular(
 
   // Internal nodes
   const internalSize = Math.max(2, treeSettings.nodeSize - 2)
-  node.filter((d: any) => !!d.children).append('circle')
+  const internalNodes = node.filter((d: any) => !!d.children)
+  internalNodes.append('circle')
     .attr('r', internalSize)
     .attr('fill', linkColorHover)
     .attr('stroke', nodeStroke)
     .attr('stroke-width', 1.5)
     .style('cursor', 'pointer')
     .on('click', (_event: any, d: any) => selectNode(d.data))
+  internalNodes.append('title')
+    .text((d: any) => {
+      const data = d.data as any
+      const step = data.mergeStep !== undefined ? `Step #${data.mergeStep}` : ''
+      const dist = data.mergeDistance !== undefined ? `distance: ${data.mergeDistance.toFixed(4)}` : ''
+      return [step, dist].filter(Boolean).join(' \u2014 ')
+    })
 
   // Distance labels
   if (treeSettings.showDistances) {
@@ -392,7 +411,7 @@ function drawCircular(
 
   // Internal nodes
   const internalSize = Math.max(1.5, treeSettings.nodeSize - 2)
-  g.selectAll('.internal-dot')
+  const internalDots = g.selectAll('.internal-dot')
     .data(root.descendants().filter(d => !!d.children))
     .join('circle')
     .attr('cx', (d: any) => (d.y as number) * Math.cos((d.x as number) - Math.PI / 2))
@@ -403,6 +422,13 @@ function drawCircular(
     .attr('stroke-width', 1.5)
     .style('cursor', 'pointer')
     .on('click', (_event: any, d: any) => selectNode(d.data))
+  internalDots.append('title')
+    .text((d: any) => {
+      const data = d.data as any
+      const step = data.mergeStep !== undefined ? `Step #${data.mergeStep}` : ''
+      const dist = data.mergeDistance !== undefined ? `distance: ${data.mergeDistance.toFixed(4)}` : ''
+      return [step, dist].filter(Boolean).join(' \u2014 ')
+    })
 
   // Guide circle
   if (treeSettings.showGuideCircle) {

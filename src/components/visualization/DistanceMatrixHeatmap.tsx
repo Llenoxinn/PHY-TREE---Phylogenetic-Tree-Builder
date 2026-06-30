@@ -57,6 +57,7 @@ export function DistanceMatrixHeatmap() {
                       style={{
                         backgroundColor: cellColor,
                         color: textColor,
+                        transition: 'background-color 0.3s ease, color 0.3s ease',
                       }}
                       onClick={isClickable ? () => setSelectedPair({ i: Math.min(i, j), j: Math.max(i, j) }) : undefined}
                       title={isClickable ? `Click to view alignment` : undefined}

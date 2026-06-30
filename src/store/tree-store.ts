@@ -12,6 +12,10 @@ interface TreeStore {
   selectedNode: TreeNode | null
   method: TreeMethod
   layoutType: LayoutType
+  upgmaSteps: MergeStep[]
+  njSteps: MergeStep[]
+  upgmaTree: TreeNode | null
+  njTree: TreeNode | null
   setMethod: (m: TreeMethod) => void
   setLayoutType: (t: LayoutType) => void
   buildTree: (labels: string[], distanceMatrix: number[][]) => void
@@ -34,18 +38,28 @@ export const useTreeStore = create<TreeStore>((set, get) => ({
   selectedNode: null,
   method: 'upgma',
   layoutType: 'rectangular',
+  upgmaSteps: [],
+  njSteps: [],
+  upgmaTree: null,
+  njTree: null,
   setMethod: (m: TreeMethod) => set({ method: m }),
   setLayoutType: (t: LayoutType) => set({ layoutType: t }),
   buildTree: (labels: string[], distanceMatrix: number[][]) => {
     const { method } = get()
-    const steps = method === 'upgma'
-      ? computeUPGMA(labels, distanceMatrix)
-      : computeNeighborJoining(labels, distanceMatrix)
-    const lastStep = steps[steps.length - 1]
+    const upgmaSteps = computeUPGMA(labels, distanceMatrix)
+    const njSteps = computeNeighborJoining(labels, distanceMatrix)
+    const upgmaTree = upgmaSteps[upgmaSteps.length - 1]?.treeState ?? null
+    const njTree = njSteps[njSteps.length - 1]?.treeState ?? null
+    const activeSteps = method === 'upgma' ? upgmaSteps : njSteps
+    const activeTree = method === 'upgma' ? upgmaTree : njTree
     set({
-      steps,
+      upgmaSteps,
+      njSteps,
+      upgmaTree,
+      njTree,
+      steps: activeSteps,
+      fullTree: activeTree,
       currentStep: 0,
-      fullTree: lastStep?.treeState ?? null,
       isPlaying: false,
       selectedNode: null,
     })
@@ -66,6 +80,9 @@ export const useTreeStore = create<TreeStore>((set, get) => ({
     if (currentStep > 0) set({ currentStep: currentStep - 1 })
   },
   selectNode: (n: TreeNode | null) => set({ selectedNode: n }),
-  reset: () => set({ steps: [], currentStep: 0, fullTree: null, isPlaying: false, selectedNode: null }),
+  reset: () => set({
+    steps: [], currentStep: 0, fullTree: null, isPlaying: false,
+    selectedNode: null, upgmaSteps: [], njSteps: [], upgmaTree: null, njTree: null,
+  }),
   setPlaySpeed: (s: number) => set({ playSpeed: s }),
 }))

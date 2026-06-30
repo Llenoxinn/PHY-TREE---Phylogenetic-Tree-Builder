@@ -15,7 +15,7 @@ interface HeaderProps {
 }
 
 export function Header({ onToggleSidebar, onToggleRightPanel, onTogglePanel, hasData }: HeaderProps) {
-  const { palette, setPalette, theme, setTheme, toggleHeatmap, toggleExplainer, toggleNodePanel, showHeatmap, showExplainer, showNodePanel, showTreeSettings, toggleTreeSettings, showMSA, toggleMSA } = useUIStore()
+  const { palette, setPalette, theme, setTheme, toggleHeatmap, toggleExplainer, toggleNodePanel, showHeatmap, showExplainer, showNodePanel, showTreeSettings, toggleTreeSettings, showMSA, toggleMSA, comparisonMode, toggleComparison } = useUIStore()
   const { exportSVG, exportPNG } = useExport()
   const { fullTree } = useTreeStore()
   const { distanceMatrix } = useAlignmentStore()
@@ -129,6 +129,15 @@ export function Header({ onToggleSidebar, onToggleRightPanel, onTogglePanel, has
             className={`px-1.5 py-0.5 transition-colors ${showTreeSettings ? 'text-blush-600 dark:text-blush-400 font-medium bg-blush-50 dark:bg-blush-900/20' : 'text-text-secondary hover:text-text-primary hover:bg-surface-hover'}`}
           >
             Style
+          </button>
+        )}
+
+        {hasData && (
+          <button
+            onClick={toggleComparison}
+            className={`px-1.5 py-0.5 transition-colors ${comparisonMode ? 'text-blush-600 dark:text-blush-400 font-medium bg-blush-50 dark:bg-blush-900/20' : 'text-text-secondary hover:text-text-primary hover:bg-surface-hover'}`}
+          >
+            Compare
           </button>
         )}
 

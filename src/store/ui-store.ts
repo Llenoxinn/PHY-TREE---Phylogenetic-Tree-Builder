@@ -22,6 +22,7 @@ interface UIStore {
   showNodePanel: boolean
   showTreeSettings: boolean
   showMSA: boolean
+  comparisonMode: boolean
   palette: PaletteName
   theme: 'light' | 'dark'
   treeSettings: TreeSettings
@@ -30,6 +31,7 @@ interface UIStore {
   toggleNodePanel: () => void
   toggleTreeSettings: () => void
   toggleMSA: () => void
+  toggleComparison: () => void
   setPalette: (p: PaletteName) => void
   setTheme: (t: 'light' | 'dark') => void
   setTreeSettings: (s: Partial<TreeSettings>) => void
@@ -54,6 +56,7 @@ export const useUIStore = create<UIStore>((set) => ({
   showNodePanel: false,
   showTreeSettings: false,
   showMSA: false,
+  comparisonMode: false,
   palette: 'default',
   theme: 'light',
   treeSettings: DEFAULT_TREE_SETTINGS,
@@ -62,6 +65,7 @@ export const useUIStore = create<UIStore>((set) => ({
   toggleNodePanel: () => set(s => ({ showNodePanel: !s.showNodePanel })),
   toggleTreeSettings: () => set(s => ({ showTreeSettings: !s.showTreeSettings })),
   toggleMSA: () => set(s => ({ showMSA: !s.showMSA })),
+  toggleComparison: () => set(s => ({ comparisonMode: !s.comparisonMode })),
   setPalette: (p: PaletteName) => set({ palette: p }),
   setTheme: (t: 'light' | 'dark') => set({ theme: t }),
   setTreeSettings: (s) => set(state => ({ treeSettings: { ...state.treeSettings, ...s } })),

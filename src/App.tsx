@@ -5,6 +5,7 @@ import { MethodSelector } from './components/controls/MethodSelector'
 import { ScoringSelector } from './components/controls/ScoringSelector'
 import { LayoutToggle } from './components/controls/LayoutToggle'
 import { StepReplayControls } from './components/controls/StepReplayControls'
+import { ComparisonView } from './components/visualization/ComparisonView'
 import { TreeCanvas } from './components/visualization/TreeCanvas'
 import { DistanceMatrixHeatmap } from './components/visualization/DistanceMatrixHeatmap'
 import { NodeInspectionPanel } from './components/visualization/NodeInspectionPanel'
@@ -42,7 +43,7 @@ export default function App() {
   const distanceMatrix = useAlignmentStore(s => s.distanceMatrix)
   const isComputing = useAlignmentStore(s => s.isComputing)
   const theme = useUIStore(s => s.theme)
-  const { showHeatmap, showExplainer, showNodePanel, showMSA } = useUIStore()
+  const { showHeatmap, showExplainer, showNodePanel, showMSA, comparisonMode } = useUIStore()
   const [activeTab, setActiveTab] = useState<'input' | 'howto'>('input')
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [rightPanelOpen, setRightPanelOpen] = useState(true)
@@ -150,7 +151,7 @@ export default function App() {
         <main className="flex-1 flex flex-col overflow-hidden relative bg-surface-alt min-w-0">
           <WelcomeHero />
 
-          {hasData && (
+          {hasData && !comparisonMode && (
             <div className="flex-1 relative" id="tree-svg-container">
               {isComputing && (
                 <div className="absolute inset-0 z-10 flex items-center justify-center bg-surface/80">
@@ -163,6 +164,7 @@ export default function App() {
               <TreeCanvas />
             </div>
           )}
+          {hasData && comparisonMode && <ComparisonView />}
 
           {hasData && (
             <div className="border-t border-border px-3 py-2 bg-surface flex-shrink-0">
