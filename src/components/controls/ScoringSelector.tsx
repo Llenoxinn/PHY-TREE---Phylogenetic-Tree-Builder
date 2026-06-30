@@ -15,7 +15,7 @@ export function ScoringSelector() {
       <select
         value={matrixType}
         onChange={(e) => setMatrixType(e.target.value as ScoringMatrixType)}
-        className="w-full text-[11px] px-2 py-1.5 border border-border rounded bg-surface text-text-primary focus:outline-none focus:border-blush-400"
+        className="w-full text-[11px] px-2 py-1.5 border border-border bg-surface text-text-primary focus:outline-none focus:border-blush-400"
       >
         {Object.entries(SCORING_MATRICES).map(([key, val]) => (
           <option key={key} value={key}>{val.name}</option>

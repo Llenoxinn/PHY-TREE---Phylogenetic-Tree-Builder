@@ -44,7 +44,7 @@ export function SequenceInput() {
           onPaste={handlePaste}
           placeholder={`>Human\nGAGCTGGTAGACGGTACCT\n\n>Chimp\nGAGCTGGTAGACGGTACCT`}
           rows={8}
-          className="w-full p-2 border border-border rounded resize-y bg-surface focus:outline-none focus:border-blush-400 placeholder:text-text-muted text-text-primary"
+          className="w-full p-2 border border-border resize-y bg-surface focus:outline-none focus:border-blush-400 placeholder:text-text-muted text-text-primary"
           style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', lineHeight: '1.6', letterSpacing: '0.02em' }}
         />
       ) : (
