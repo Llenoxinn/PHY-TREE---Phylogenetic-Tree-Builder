@@ -18,6 +18,7 @@ import { useSequenceStore } from './store/sequence-store'
 import { useAlignmentStore } from './store/alignment-store'
 import { useTreeStore } from './store/tree-store'
 import { useUIStore } from './store/ui-store'
+import { useToastStore } from './store/toast-store'
 import { SCORING_MATRICES } from './lib/algorithms/scoring-matrices'
 import { computeDistanceMatrix, buildNxNMatrix } from './lib/algorithms/needleman-wunsch'
 
@@ -29,12 +30,15 @@ export function runFullPipeline() {
   const scoring = SCORING_MATRICES[matrixType]
   const seqStrings = seqs.map(s => s.raw)
 
-  const pairwise = computeDistanceMatrix(seqStrings, scoring.matrix, gapPenalty)
-  const distanceMatrix = buildNxNMatrix(seqStrings, pairwise)
-  useAlignmentStore.setState({ pairwiseAlignments: pairwise, distanceMatrix })
+  useAlignmentStore.setState({ isComputing: true })
+  setTimeout(() => {
+    const pairwise = computeDistanceMatrix(seqStrings, scoring.matrix, gapPenalty)
+    const distanceMatrix = buildNxNMatrix(seqStrings, pairwise)
+    useAlignmentStore.setState({ pairwiseAlignments: pairwise, distanceMatrix, isComputing: false })
 
-  const labels = seqs.map(s => s.label)
-  useTreeStore.getState().buildTree(labels, distanceMatrix)
+    const labels = seqs.map(s => s.label)
+    useTreeStore.getState().buildTree(labels, distanceMatrix)
+  }, 0)
 }
 
 export default function App() {
@@ -58,10 +62,24 @@ export default function App() {
 
   useEffect(() => {
     if (sequences.length >= 2) {
-      const timer = setTimeout(() => runFullPipeline(), 30)
+      const timer = setTimeout(() => runFullPipeline(), 300)
       return () => clearTimeout(timer)
     }
   }, [rawInput])
+
+  // Auto-detect DNA vs protein
+  useEffect(() => {
+    if (sequences.length === 0) return
+    const sample = sequences.slice(0, 5).map(s => s.raw.toUpperCase()).join('')
+    const nonDna = sample.replace(/[ACGTUN\s]/g, '')
+    if (nonDna.length > sample.length * 0.1) {
+      const { matrixType } = useAlignmentStore.getState()
+      if (matrixType === 'simple') {
+        useAlignmentStore.getState().setMatrixType('blosum62')
+        useToastStore.getState().addToast('Non-DNA characters detected \u2014 switched to BLOSUM62', 'info')
+      }
+    }
+  }, [sequences.length])
 
   // Auto-close panels on small screens
   useEffect(() => {
@@ -80,6 +98,7 @@ export default function App() {
 
   const handleBuild = () => {
     runFullPipeline()
+    useToastStore.getState().addToast('Building tree...', 'info')
   }
 
   const showRightPanel = (showHeatmap || showExplainer || showNodePanel || showMSA) && hasData && rightPanelOpen

@@ -1,17 +1,43 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useSequenceStore } from '../../store/sequence-store'
+import { useToastStore } from '../../store/toast-store'
 
 const SEQUENCE_COLORS = ['#4e79a7', '#f28e2b', '#e15759', '#76b7b2', '#59a14f', '#edc948', '#b07aa1', '#ff9da7', '#9c755f', '#bab0ac']
 
 export function SequenceInput() {
   const { rawInput, setRawInput, sequences, validationErrors } = useSequenceStore()
+  const { addToast } = useToastStore()
   const [isEditing, setIsEditing] = useState(false)
+  const [isDragOver, setIsDragOver] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const handlePaste = (e: React.ClipboardEvent) => {
     const text = e.clipboardData.getData('text')
     if (text.trim().startsWith('>')) {
       setRawInput(text)
     }
+  }
+
+  const handleFile = (file: File) => {
+    const reader = new FileReader()
+    reader.onload = () => {
+      const text = reader.result as string
+      setRawInput(text)
+      addToast(`Loaded ${file.name}`, 'success')
+    }
+    reader.readAsText(file)
+  }
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault()
+    setIsDragOver(false)
+    const file = e.dataTransfer.files[0]
+    if (file) handleFile(file)
+  }
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) handleFile(file)
   }
 
   const hasSeqs = sequences.length > 0
@@ -38,15 +64,38 @@ export function SequenceInput() {
       </div>
 
       {isEditing || !hasSeqs ? (
-        <textarea
-          value={rawInput}
-          onChange={(e) => setRawInput(e.target.value)}
-          onPaste={handlePaste}
-          placeholder={`>Human\nGAGCTGGTAGACGGTACCT\n\n>Chimp\nGAGCTGGTAGACGGTACCT`}
-          rows={8}
-          className="w-full p-2 border border-border resize-y bg-surface focus:outline-none focus:border-blush-400 placeholder:text-text-muted text-text-primary"
-          style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', lineHeight: '1.6', letterSpacing: '0.02em' }}
-        />
+        <div
+          onDragOver={(e) => { e.preventDefault(); setIsDragOver(true) }}
+          onDragLeave={() => setIsDragOver(false)}
+          onDrop={handleDrop}
+          className={`relative border transition-colors ${isDragOver ? 'border-blush-400 bg-blush-50 dark:bg-blush-900/10' : 'border-border bg-surface'}`}
+        >
+          <div className="flex items-center gap-2 p-1.5 border-b border-border bg-surface-hover">
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".fasta,.fa,.txt,.csv"
+              className="hidden"
+              onChange={handleFileSelect}
+            />
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              className="text-[10px] text-text-muted hover:text-blush-500 dark:hover:text-blush-400 transition-colors"
+            >
+              Open File
+            </button>
+            <span className="text-[9px] text-text-muted">or drop .fasta here</span>
+          </div>
+          <textarea
+            value={rawInput}
+            onChange={(e) => setRawInput(e.target.value)}
+            onPaste={handlePaste}
+            placeholder={`>Human\nGAGCTGGTAGACGGTACCT\n\n>Chimp\nGAGCTGGTAGACGGTACCT`}
+            rows={8}
+            className="w-full p-2 resize-y bg-transparent focus:outline-none focus:border-blush-400 placeholder:text-text-muted text-text-primary"
+            style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', lineHeight: '1.6', letterSpacing: '0.02em' }}
+          />
+        </div>
       ) : (
         <div className="border border-border bg-surface">
           {sequences.map((seq, i) => {

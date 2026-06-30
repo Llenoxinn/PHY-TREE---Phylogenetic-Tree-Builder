@@ -26,10 +26,10 @@ export function DistanceMatrixHeatmap() {
       <div className="overflow-x-auto border border-border">
         <table className="text-[9px] font-mono border-collapse w-full">
           <thead>
-            <tr>
+            <tr className="sticky top-0 z-10">
               <th className="p-1 bg-surface-hover" />
               {displayLabels.map((l: string, i: number) => (
-                <th key={i} className="p-1 font-medium text-text-muted max-w-10 truncate" title={l}>
+                <th key={i} className="p-1 font-medium text-text-muted max-w-10 truncate sticky top-0 bg-surface-hover" title={l}>
                   {l.length > 5 ? l.slice(0, 4) + '..' : l}
                 </th>
               ))}

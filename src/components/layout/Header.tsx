@@ -5,6 +5,7 @@ import { toNewick } from '../../lib/io/newick-exporter'
 import { matrixToCSV, downloadCSV } from '../../lib/utils/matrix'
 import { useAlignmentStore } from '../../store/alignment-store'
 import { useSequenceStore } from '../../store/sequence-store'
+import { useToastStore } from '../../store/toast-store'
 import { PhyTreeLogo } from './PhyTreeLogo'
 
 interface HeaderProps {
@@ -20,18 +21,22 @@ export function Header({ onToggleSidebar, onToggleRightPanel, onTogglePanel, has
   const { fullTree } = useTreeStore()
   const { distanceMatrix } = useAlignmentStore()
   const { sequences, setRawInput } = useSequenceStore()
+  const { addToast } = useToastStore()
 
   const handleNew = () => {
     setRawInput('')
+    addToast('Cleared all sequences', 'info')
   }
 
   const handleSVG = () => {
     const svg = document.querySelector('#tree-svg-container svg') as SVGSVGElement | null
     exportSVG(svg)
+    addToast('SVG exported', 'success')
   }
   const handlePNG = () => {
     const svg = document.querySelector('#tree-svg-container svg') as SVGSVGElement | null
     exportPNG(svg)
+    addToast('PNG exported', 'success')
   }
   const handleNewick = () => {
     if (!fullTree) return
@@ -41,11 +46,13 @@ export function Header({ onToggleSidebar, onToggleRightPanel, onTogglePanel, has
     const a = document.createElement('a')
     a.href = url; a.download = 'tree.newick'; a.click()
     URL.revokeObjectURL(url)
+    addToast('Newick exported', 'success')
   }
   const handleCSV = () => {
     if (distanceMatrix.length === 0) return
     const csv = matrixToCSV(distanceMatrix, sequences.map(s => s.label))
     downloadCSV(csv)
+    addToast('CSV exported', 'success')
   }
 
   return (
@@ -54,6 +61,7 @@ export function Header({ onToggleSidebar, onToggleRightPanel, onTogglePanel, has
       <button
         onClick={onToggleSidebar}
         className="md:hidden p-1.5 text-text-secondary hover:text-text-primary hover:bg-surface-hover transition-colors flex-shrink-0"
+        aria-label="Toggle sidebar"
       >
         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
@@ -161,6 +169,7 @@ export function Header({ onToggleSidebar, onToggleRightPanel, onTogglePanel, has
           <button
             onClick={onToggleRightPanel}
             className="lg:hidden p-1.5 text-text-secondary hover:text-text-primary hover:bg-surface-hover transition-colors"
+            aria-label="Toggle right panel"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2" />
