@@ -2,9 +2,10 @@ import { useAlignmentStore } from '../../store/alignment-store'
 import { useTreeStore } from '../../store/tree-store'
 import { useUIStore } from '../../store/ui-store'
 import { useSequenceStore } from '../../store/sequence-store'
+import { PairwiseAlignmentViewer } from './PairwiseAlignmentViewer'
 
 export function DistanceMatrixHeatmap() {
-  const { distanceMatrix } = useAlignmentStore()
+  const { distanceMatrix, setSelectedPair } = useAlignmentStore()
   const { steps, currentStep } = useTreeStore()
   const { showHeatmap, theme } = useUIStore()
   const { sequences } = useSequenceStore()
@@ -47,14 +48,17 @@ export function DistanceMatrixHeatmap() {
                   const textColor = isDark
                     ? intensity > 0.5 ? '#fda4af' : '#a9b1d6'
                     : intensity > 0.6 ? '#9f1239' : '#495057'
+                  const isClickable = j > i
                   return (
                     <td
                       key={j}
-                      className="p-0.5 text-center min-w-[1.5rem]"
+                      className={`p-0.5 text-center min-w-[1.5rem] ${isClickable ? 'cursor-pointer' : ''}`}
                       style={{
                         backgroundColor: cellColor,
                         color: textColor,
                       }}
+                      onClick={isClickable ? () => setSelectedPair({ i: Math.min(i, j), j: Math.max(i, j) }) : undefined}
+                      title={isClickable ? `Click to view alignment` : undefined}
                     >
                       {val.toFixed(2)}
                     </td>
@@ -65,6 +69,7 @@ export function DistanceMatrixHeatmap() {
           </tbody>
         </table>
       </div>
+      <PairwiseAlignmentViewer />
     </div>
   )
 }

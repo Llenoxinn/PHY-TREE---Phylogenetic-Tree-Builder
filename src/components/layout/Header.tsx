@@ -14,7 +14,7 @@ interface HeaderProps {
 }
 
 export function Header({ onToggleSidebar, onToggleRightPanel, hasData }: HeaderProps) {
-  const { palette, setPalette, theme, setTheme, toggleHeatmap, toggleExplainer, toggleNodePanel, showHeatmap, showExplainer, showNodePanel, showTreeSettings, toggleTreeSettings } = useUIStore()
+  const { palette, setPalette, theme, setTheme, toggleHeatmap, toggleExplainer, toggleNodePanel, showHeatmap, showExplainer, showNodePanel, showTreeSettings, toggleTreeSettings, showMSA, toggleMSA } = useUIStore()
   const { exportSVG, exportPNG } = useExport()
   const { fullTree } = useTreeStore()
   const { distanceMatrix } = useAlignmentStore()
@@ -136,6 +136,7 @@ export function Header({ onToggleSidebar, onToggleRightPanel, hasData }: HeaderP
         {/* Panel toggles */}
         {[
           { label: 'Heatmap', checked: showHeatmap, toggle: toggleHeatmap },
+          { label: 'MSA', checked: showMSA, toggle: toggleMSA },
           { label: 'Explain', checked: showExplainer, toggle: toggleExplainer },
           { label: 'Inspect', checked: showNodePanel, toggle: toggleNodePanel },
         ].map(item => (

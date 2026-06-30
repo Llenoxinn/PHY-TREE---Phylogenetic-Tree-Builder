@@ -8,6 +8,7 @@ import { StepReplayControls } from './components/controls/StepReplayControls'
 import { TreeCanvas } from './components/visualization/TreeCanvas'
 import { DistanceMatrixHeatmap } from './components/visualization/DistanceMatrixHeatmap'
 import { NodeInspectionPanel } from './components/visualization/NodeInspectionPanel'
+import { MSAViewer } from './components/visualization/MSAViewer'
 import { AlgorithmExplainer } from './components/info/AlgorithmExplainer'
 import { ExamplePresets } from './components/info/ExamplePresets'
 import { TreeSettings } from './components/controls/TreeSettings'
@@ -41,7 +42,7 @@ export default function App() {
   const distanceMatrix = useAlignmentStore(s => s.distanceMatrix)
   const isComputing = useAlignmentStore(s => s.isComputing)
   const theme = useUIStore(s => s.theme)
-  const { showHeatmap, showExplainer, showNodePanel } = useUIStore()
+  const { showHeatmap, showExplainer, showNodePanel, showMSA } = useUIStore()
   const [activeTab, setActiveTab] = useState<'input' | 'howto'>('input')
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [rightPanelOpen, setRightPanelOpen] = useState(true)
@@ -80,7 +81,7 @@ export default function App() {
     runFullPipeline()
   }
 
-  const showRightPanel = (showHeatmap || showExplainer || showNodePanel) && hasData && rightPanelOpen
+  const showRightPanel = (showHeatmap || showExplainer || showNodePanel || showMSA) && hasData && rightPanelOpen
 
   return (
     <div className="h-screen flex flex-col bg-surface-alt text-text-primary">
@@ -200,6 +201,7 @@ export default function App() {
                 {showExplainer && <AlgorithmExplainer />}
                 {showHeatmap && <DistanceMatrixHeatmap />}
                 {showNodePanel && <NodeInspectionPanel />}
+                {showMSA && <MSAViewer />}
               </div>
             </aside>
           </>

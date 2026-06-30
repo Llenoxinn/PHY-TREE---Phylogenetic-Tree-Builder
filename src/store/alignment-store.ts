@@ -9,8 +9,11 @@ interface AlignmentStore {
   matrixType: ScoringMatrixType
   gapPenalty: number
   isComputing: boolean
+  selectedPair: { i: number; j: number } | null
   setMatrixType: (t: ScoringMatrixType) => void
   setGapPenalty: (gp: number) => void
+  setSelectedPair: (pair: { i: number; j: number } | null) => void
+  clearSelectedPair: () => void
   compute: (sequences: string[]) => void
 }
 
@@ -20,8 +23,11 @@ export const useAlignmentStore = create<AlignmentStore>((set) => ({
   matrixType: 'simple',
   gapPenalty: -2,
   isComputing: false,
+  selectedPair: null,
   setMatrixType: (t: ScoringMatrixType) => set({ matrixType: t }),
   setGapPenalty: (gp: number) => set({ gapPenalty: gp }),
+  setSelectedPair: (pair: { i: number; j: number } | null) => set({ selectedPair: pair }),
+  clearSelectedPair: () => set({ selectedPair: null }),
   compute: (sequences: string[]) => {
     set({ isComputing: true })
     const state = useAlignmentStore.getState()

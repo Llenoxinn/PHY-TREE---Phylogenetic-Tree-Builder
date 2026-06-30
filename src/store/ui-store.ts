@@ -21,6 +21,7 @@ interface UIStore {
   showExplainer: boolean
   showNodePanel: boolean
   showTreeSettings: boolean
+  showMSA: boolean
   palette: PaletteName
   theme: 'light' | 'dark'
   treeSettings: TreeSettings
@@ -28,6 +29,7 @@ interface UIStore {
   toggleExplainer: () => void
   toggleNodePanel: () => void
   toggleTreeSettings: () => void
+  toggleMSA: () => void
   setPalette: (p: PaletteName) => void
   setTheme: (t: 'light' | 'dark') => void
   setTreeSettings: (s: Partial<TreeSettings>) => void
@@ -51,6 +53,7 @@ export const useUIStore = create<UIStore>((set) => ({
   showExplainer: false,
   showNodePanel: false,
   showTreeSettings: false,
+  showMSA: false,
   palette: 'default',
   theme: 'light',
   treeSettings: DEFAULT_TREE_SETTINGS,
@@ -58,6 +61,7 @@ export const useUIStore = create<UIStore>((set) => ({
   toggleExplainer: () => set(s => ({ showExplainer: !s.showExplainer })),
   toggleNodePanel: () => set(s => ({ showNodePanel: !s.showNodePanel })),
   toggleTreeSettings: () => set(s => ({ showTreeSettings: !s.showTreeSettings })),
+  toggleMSA: () => set(s => ({ showMSA: !s.showMSA })),
   setPalette: (p: PaletteName) => set({ palette: p }),
   setTheme: (t: 'light' | 'dark') => set({ theme: t }),
   setTreeSettings: (s) => set(state => ({ treeSettings: { ...state.treeSettings, ...s } })),

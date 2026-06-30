@@ -1,7 +1,7 @@
 import type { TreeNode, MergeStep } from '../../types'
 
 function buildLeaf(name: string, index: number): TreeNode {
-  return { id: `leaf-${index}`, name, distance: 0, children: [] }
+  return { id: `leaf-${index}`, name, distance: 0, children: [], originalIndex: index }
 }
 
 function cloneMatrix(m: number[][]): number[][] {
