@@ -2,8 +2,10 @@ import { create } from 'zustand'
 import type { PaletteName } from '../lib/utils/colors'
 
 export type BranchStyle = 'elbow' | 'curved' | 'diagonal'
+export type BranchMode = 'phylogram' | 'cladogram'
 
 interface TreeSettings {
+  branchMode: BranchMode
   branchStyle: BranchStyle
   branchWidth: number
   branchColor: string
@@ -38,6 +40,7 @@ interface UIStore {
 }
 
 const DEFAULT_TREE_SETTINGS: TreeSettings = {
+  branchMode: 'phylogram',
   branchStyle: 'curved',
   branchWidth: 1.5,
   branchColor: '',

@@ -21,6 +21,7 @@ import { useUIStore } from './store/ui-store'
 import { useToastStore } from './store/toast-store'
 import { SCORING_MATRICES } from './lib/algorithms/scoring-matrices'
 import { computeDistanceMatrix, buildNxNMatrix } from './lib/algorithms/needleman-wunsch'
+import { applyCorrection, correctionName } from './lib/algorithms/distance-models'
 
 export function runFullPipeline() {
   const seqs = useSequenceStore.getState().sequences
@@ -33,12 +34,40 @@ export function runFullPipeline() {
   useAlignmentStore.setState({ isComputing: true })
   setTimeout(() => {
     const pairwise = computeDistanceMatrix(seqStrings, scoring.matrix, gapPenalty)
-    const distanceMatrix = buildNxNMatrix(seqStrings, pairwise)
-    useAlignmentStore.setState({ pairwiseAlignments: pairwise, distanceMatrix, isComputing: false })
-
-    const labels = seqs.map(s => s.label)
-    useTreeStore.getState().buildTree(labels, distanceMatrix)
+    useAlignmentStore.setState({ pairwiseAlignments: pairwise, isComputing: false })
+    rebuildFromAlignments()
   }, 0)
+}
+
+/**
+ * Applies the distance correction to the stored alignments and rebuilds the
+ * trees. Refuses to build when any pair is saturated (correction not computable).
+ */
+export function rebuildFromAlignments() {
+  const seqs = useSequenceStore.getState().sequences
+  const { pairwiseAlignments, matrixType, distanceCorrection } = useAlignmentStore.getState()
+  if (seqs.length < 2 || pairwiseAlignments.length === 0) return
+
+  const isProtein = matrixType !== 'simple'
+  const pairwise = applyCorrection(pairwiseAlignments, distanceCorrection, isProtein)
+  const saturated = pairwise.filter(p => p.saturated)
+
+  if (saturated.length > 0) {
+    const names = saturated.slice(0, 3).map(p => `${seqs[p.i].label}–${seqs[p.j].label}`).join(', ')
+    const more = saturated.length > 3 ? ` and ${saturated.length - 3} more` : ''
+    useAlignmentStore.setState({ pairwiseAlignments: pairwise, distanceMatrix: [] })
+    useTreeStore.getState().reset()
+    useToastStore.getState().addToast(
+      `${names}${more} too divergent for the ${correctionName(isProtein)} correction. Switch to Uncorrected distances.`,
+      'error',
+    )
+    return
+  }
+
+  const seqStrings = seqs.map(s => s.raw)
+  const distanceMatrix = buildNxNMatrix(seqStrings, pairwise)
+  useAlignmentStore.setState({ pairwiseAlignments: pairwise, distanceMatrix })
+  useTreeStore.getState().buildTree(seqs.map(s => s.label), distanceMatrix)
 }
 
 export default function App() {

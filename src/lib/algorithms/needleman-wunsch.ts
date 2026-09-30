@@ -79,7 +79,7 @@ export function computeDistanceMatrix(
     for (let j = i + 1; j < n; j++) {
       const { alignedA, alignedB, score } = needlemanWunsch(sequences[i], sequences[j], matrix, gapPenalty)
       const distance = pDistance(alignedA, alignedB)
-      results.push({ i, j, alignedA, alignedB, score, distance })
+      results.push({ i, j, alignedA, alignedB, score, pDistance: distance, distance, saturated: false })
     }
   }
 
