@@ -3,6 +3,7 @@ import * as d3 from 'd3'
 import { useTreeStore } from '../../store/tree-store'
 import { useSequenceStore } from '../../store/sequence-store'
 import { useUIStore } from '../../store/ui-store'
+import { useAlignmentStore } from '../../store/alignment-store'
 import { getLeafColor, type PaletteName } from '../../lib/utils/colors'
 import type { TreeNode, MergeStep } from '../../types'
 
@@ -17,6 +18,8 @@ export function TreeCanvas({ stepsOverride, methodLabel }: TreeCanvasProps) {
   const { steps: storeSteps, currentStep, layoutType, selectNode } = useTreeStore()
   const { setHovered, hoveredIndex } = useSequenceStore()
   const { palette, theme, treeSettings } = useUIStore()
+  const distanceCorrection = useAlignmentStore(s => s.distanceCorrection)
+  const distanceUnit = distanceCorrection === 'corrected' ? 'substitutions/site' : 'p-distance'
 
   const steps = stepsOverride ?? storeSteps
   const treeData = steps[currentStep]?.treeState ?? null
@@ -55,16 +58,16 @@ export function TreeCanvas({ stepsOverride, methodLabel }: TreeCanvasProps) {
     if (isCircular) {
       drawCircular(svg, root, width, height, {
         textColor, textColorMuted, linkColor, linkColorHover, nodeStroke, paletteName,
-        selectNode, setHovered, hoveredIndex, treeSettings,
+        selectNode, setHovered, hoveredIndex, treeSettings, distanceUnit,
       })
     } else {
       drawRectangular(svg, root, width, height, {
         textColor, textColorMuted, linkColor, linkColorHover, nodeStroke, paletteName,
-        selectNode, setHovered, hoveredIndex, treeSettings,
+        selectNode, setHovered, hoveredIndex, treeSettings, distanceUnit,
       })
     }
 
-  }, [treeData, layoutType, selectNode, setHovered, palette, theme, hoveredIndex, treeSettings])
+  }, [treeData, layoutType, selectNode, setHovered, palette, theme, hoveredIndex, treeSettings, distanceUnit])
 
   useEffect(() => { draw() }, [draw])
 
@@ -96,7 +99,9 @@ interface DrawOpts {
   selectNode: (node: any) => void
   setHovered: (idx: number | null) => void
   hoveredIndex: number | null
+  distanceUnit: string
   treeSettings: {
+    branchMode: string
     branchStyle: string
     branchWidth: number
     nodeSize: number
@@ -138,6 +143,7 @@ function drawRectangular(
 
   const cluster = d3.cluster<TreeNode>().size([h, w])
   cluster(root)
+  const depth = treeSettings.branchMode === 'phylogram' ? applyBranchLengths(root, w) : 0
 
   const g = svg.append('g').attr('transform', `translate(${pad.left},${pad.top})`)
 
@@ -280,35 +286,8 @@ function drawRectangular(
       })
   }
 
-  // Scale bar
-  if (treeSettings.showScaleBar) {
-    const maxDist = getMaxDistance(root)
-    if (maxDist > 0) {
-      const scaleWidth = w * 0.15
-      const scaleValue = roundNice(maxDist * 0.2)
-      const scaleG = svg.append('g')
-        .attr('transform', `translate(${pad.left},${height - 12})`)
-
-      scaleG.append('line')
-        .attr('x1', 0).attr('y1', 0)
-        .attr('x2', scaleWidth).attr('y2', 0)
-        .attr('stroke', textColorMuted).attr('stroke-width', 1)
-
-      scaleG.append('line')
-        .attr('x1', 0).attr('y1', -3).attr('x2', 0).attr('y2', 3)
-        .attr('stroke', textColorMuted).attr('stroke-width', 1)
-      scaleG.append('line')
-        .attr('x1', scaleWidth).attr('y1', -3).attr('x2', scaleWidth).attr('y2', 3)
-        .attr('stroke', textColorMuted).attr('stroke-width', 1)
-
-      scaleG.append('text')
-        .attr('x', scaleWidth / 2).attr('y', -6)
-        .attr('text-anchor', 'middle')
-        .style('font-size', '9px')
-        .style('font-family', 'var(--font-mono)')
-        .style('fill', textColorMuted)
-        .text(scaleValue.toFixed(3))
-    }
+  if (treeSettings.showScaleBar && depth > 0) {
+    drawScaleBar(svg, pad.left, height - 12, w, depth, opts)
   }
 }
 
@@ -324,6 +303,10 @@ function drawCircular(
   const radius = Math.min(width, height) * 0.36
   const cluster = d3.cluster<TreeNode>().size([2 * Math.PI, radius])
   cluster(root)
+  const depth = treeSettings.branchMode === 'phylogram' ? applyBranchLengths(root, radius) : 0
+  if (treeSettings.showScaleBar && depth > 0) {
+    drawScaleBar(svg, 16, height - 12, radius, depth, opts)
+  }
 
   const g = svg.append('g')
     .attr('transform', `translate(${width / 2},${height / 2})`)
@@ -442,14 +425,51 @@ function drawCircular(
   }
 }
 
-function getMaxDistance(root: d3.HierarchyNode<TreeNode>): number {
-  let max = 0
-  root.descendants().forEach(d => {
-    if ((d.data as any).mergeDistance !== undefined) {
-      max = Math.max(max, (d.data as any).mergeDistance)
-    }
+/**
+ * Phylogram positioning: sets each node's depth coordinate (`y`) from its
+ * cumulative branch length from the root, scaled to `extent`. Returns the tree
+ * depth in distance units, or 0 (leaving cladogram positions) if all lengths are 0.
+ */
+function applyBranchLengths(root: d3.HierarchyNode<TreeNode>, extent: number): number {
+  const rootDist = new Map<d3.HierarchyNode<TreeNode>, number>()
+  let depth = 0
+  root.each(d => {
+    const dist = d.parent ? rootDist.get(d.parent)! + d.data.distance : 0
+    rootDist.set(d, dist)
+    depth = Math.max(depth, dist)
   })
-  return max
+  if (depth <= 0) return 0
+  root.each(d => { d.y = (rootDist.get(d)! / depth) * extent })
+  return depth
+}
+
+function drawScaleBar(
+  svg: d3.Selection<SVGSVGElement, unknown, null, undefined>,
+  x: number,
+  y: number,
+  extent: number,
+  depth: number,
+  opts: DrawOpts,
+) {
+  const scaleValue = roundNice(depth * 0.2)
+  const scaleWidth = (scaleValue / depth) * extent
+  const color = opts.textColorMuted
+  const scaleG = svg.append('g').attr('transform', `translate(${x},${y})`)
+
+  scaleG.append('line')
+    .attr('x1', 0).attr('y1', 0).attr('x2', scaleWidth).attr('y2', 0)
+    .attr('stroke', color).attr('stroke-width', 1)
+  for (const tx of [0, scaleWidth]) {
+    scaleG.append('line')
+      .attr('x1', tx).attr('y1', -3).attr('x2', tx).attr('y2', 3)
+      .attr('stroke', color).attr('stroke-width', 1)
+  }
+  scaleG.append('text')
+    .attr('x', scaleWidth + 6).attr('y', 3)
+    .style('font-size', '9px')
+    .style('font-family', 'var(--font-mono)')
+    .style('fill', color)
+    .text(`${Number(scaleValue.toPrecision(2))} ${opts.distanceUnit}`)
 }
 
 function roundNice(value: number): number {

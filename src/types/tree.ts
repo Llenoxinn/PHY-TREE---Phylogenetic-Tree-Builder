@@ -4,6 +4,7 @@ export type TreeMethod = 'upgma' | 'neighbor-joining'
 export interface TreeNode {
   id: string
   name: string
+  /** Branch length from this node to its parent (Newick semantics). */
   distance: number
   children: TreeNode[]
   originalIndex?: number

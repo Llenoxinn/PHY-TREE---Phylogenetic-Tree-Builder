@@ -19,6 +19,8 @@ export function computeUPGMA(labels: string[], distanceMatrix: number[][]): Merg
   let currentLabels = [...labels]
   let clusters: Cluster[] = labels.map((_, i) => ({ size: 1, indices: [i] }))
   let nodes: TreeNode[] = labels.map((l, i) => buildLeaf(l, i))
+  // Height of each cluster above the leaves; UPGMA places a merge at d/2.
+  let heights: number[] = labels.map(() => 0)
   let matrix = cloneMatrix(distanceMatrix)
 
   steps.push({
@@ -55,11 +57,14 @@ export function computeUPGMA(labels: string[], distanceMatrix: number[][]): Merg
     const labelB = currentLabels[minJ]
     const mergedLabel = `(${labelA}+${labelB})`
     const newSize = clusters[minI].size + clusters[minJ].size
+    const height = minDist / 2
+    nodes[minI].distance = Math.max(0, height - heights[minI])
+    nodes[minJ].distance = Math.max(0, height - heights[minJ])
 
     const parent: TreeNode = {
       id: `node-${n + steps.length}`,
       name: mergedLabel,
-      distance: minDist,
+      distance: 0,
       children: [nodes[minI], nodes[minJ]],
       mergeStep: steps.length,
       mergeDistance: minDist,
@@ -99,6 +104,7 @@ export function computeUPGMA(labels: string[], distanceMatrix: number[][]): Merg
       ...keepIdx.map(k => nodes[k]),
       parent,
     ]
+    heights = [...keepIdx.map(k => heights[k]), height]
     matrix = newMatrix
 
     steps.push({

@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import type { PairwiseAlignment, ScoringMatrixType } from '../types'
+import type { DistanceCorrection, PairwiseAlignment, ScoringMatrixType } from '../types'
 import { SCORING_MATRICES } from '../lib/algorithms/scoring-matrices'
 import { computeDistanceMatrix, buildNxNMatrix } from '../lib/algorithms/needleman-wunsch'
 
@@ -8,10 +8,12 @@ interface AlignmentStore {
   distanceMatrix: number[][]
   matrixType: ScoringMatrixType
   gapPenalty: number
+  distanceCorrection: DistanceCorrection
   isComputing: boolean
   selectedPair: { i: number; j: number } | null
   setMatrixType: (t: ScoringMatrixType) => void
   setGapPenalty: (gp: number) => void
+  setDistanceCorrection: (c: DistanceCorrection) => void
   setSelectedPair: (pair: { i: number; j: number } | null) => void
   clearSelectedPair: () => void
   compute: (sequences: string[]) => void
@@ -22,10 +24,12 @@ export const useAlignmentStore = create<AlignmentStore>((set) => ({
   distanceMatrix: [],
   matrixType: 'simple',
   gapPenalty: -2,
+  distanceCorrection: 'none',
   isComputing: false,
   selectedPair: null,
   setMatrixType: (t: ScoringMatrixType) => set({ matrixType: t }),
   setGapPenalty: (gp: number) => set({ gapPenalty: gp }),
+  setDistanceCorrection: (c: DistanceCorrection) => set({ distanceCorrection: c }),
   setSelectedPair: (pair: { i: number; j: number } | null) => set({ selectedPair: pair }),
   clearSelectedPair: () => set({ selectedPair: null }),
   compute: (sequences: string[]) => {

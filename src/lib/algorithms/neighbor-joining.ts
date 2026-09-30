@@ -47,10 +47,18 @@ export function computeNeighborJoining(labels: string[], distanceMatrix: number[
     const dist = matrix[minI][minJ] || 0
     const labelA = currentLabels[minI]
     const labelB = currentLabels[minJ]
+
+    // Saitou & Nei branch lengths: δi = d(i,j)/2 + (r_i − r_j)/2, δj = d(i,j) − δi.
+    // Negative estimates are clamped to 0 and the remainder given to the sibling.
+    let branchI = dist / 2 + (r[minI] - r[minJ]) / 2
+    branchI = Math.min(Math.max(branchI, 0), dist)
+    nodes[minI].distance = branchI
+    nodes[minJ].distance = dist - branchI
+
     const parent: TreeNode = {
       id: `node-${n + steps.length - 1}`,
       name: `(${labelA}+${labelB})`,
-      distance: dist,
+      distance: 0,
       children: [nodes[minI], nodes[minJ]],
       mergeStep: steps.length,
       mergeDistance: dist,
@@ -98,10 +106,13 @@ export function computeNeighborJoining(labels: string[], distanceMatrix: number[
 
   if (nodes.length === 2) {
     const dist = matrix[0][1] || 0
+    // NJ trees are unrooted; for display, place the root at the midpoint of the final edge.
+    nodes[0].distance = dist / 2
+    nodes[1].distance = dist / 2
     const parent: TreeNode = {
       id: `node-${n + steps.length - 1}`,
       name: `(${currentLabels[0]}+${currentLabels[1]})`,
-      distance: dist,
+      distance: 0,
       children: [nodes[0], nodes[1]],
       mergeStep: steps.length,
       mergeDistance: dist,
