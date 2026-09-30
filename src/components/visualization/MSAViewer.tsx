@@ -12,23 +12,24 @@ export function MSAViewer() {
   const { matrixType, gapPenalty } = useAlignmentStore()
   const { showMSA, theme } = useUIStore()
 
-  if (!showMSA || !fullTree || sequences.length < 2) return null
+  const isVisible = showMSA && !!fullTree && sequences.length >= 2
 
   const rawSeqs = useMemo(() => sequences.map(s => s.raw), [sequences])
   const scoring = useMemo(() => SCORING_MATRICES[matrixType], [matrixType])
 
   const msa = useMemo(
     () => {
+      if (!isVisible || !fullTree) return null
       try {
         return computeMSA(fullTree, rawSeqs, scoring.matrix, gapPenalty)
       } catch {
         return null
       }
     },
-    [fullTree, rawSeqs, scoring.matrix, gapPenalty],
+    [isVisible, fullTree, rawSeqs, scoring.matrix, gapPenalty],
   )
 
-  if (!msa) return null
+  if (!isVisible || !msa) return null
 
   const { aligned, labels } = msa
   const conservation = computeConservation(aligned)

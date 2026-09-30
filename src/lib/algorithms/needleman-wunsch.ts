@@ -49,6 +49,24 @@ export function needlemanWunsch(
   return { alignedA, alignedB, score: dp[n][m] }
 }
 
+/**
+ * Uncorrected p-distance: the proportion of differing sites among aligned
+ * columns where neither sequence has a gap (pairwise deletion). Independent of
+ * the scoring matrix, so it is valid for both DNA and protein alignments.
+ */
+export function pDistance(alignedA: string, alignedB: string): number {
+  let compared = 0
+  let mismatches = 0
+  for (let k = 0; k < alignedA.length; k++) {
+    const x = alignedA[k]
+    const y = alignedB[k]
+    if (x === '-' || y === '-') continue
+    compared++
+    if (x !== y) mismatches++
+  }
+  return compared > 0 ? mismatches / compared : 1
+}
+
 export function computeDistanceMatrix(
   sequences: string[],
   matrix: ScoringMatrix,
@@ -60,11 +78,8 @@ export function computeDistanceMatrix(
   for (let i = 0; i < n; i++) {
     for (let j = i + 1; j < n; j++) {
       const { alignedA, alignedB, score } = needlemanWunsch(sequences[i], sequences[j], matrix, gapPenalty)
-      const maxLen = Math.max(sequences[i].length, sequences[j].length)
-      const maxScore = maxLen * 2
-      const distance = maxScore > 0 ? 1 - ((score + Math.abs(gapPenalty) * Math.abs(sequences[i].length - sequences[j].length)) / maxScore) : 0
-      const clamped = Math.max(0, Math.min(1, distance))
-      results.push({ i, j, alignedA, alignedB, score, distance: clamped })
+      const distance = pDistance(alignedA, alignedB)
+      results.push({ i, j, alignedA, alignedB, score, distance })
     }
   }
 
